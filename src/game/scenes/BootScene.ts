@@ -10,7 +10,6 @@ export default class BootScene extends Scene {
     debugger;
     this.load.image('sky', 'assets/sky.png');
     this.load.image('bomb', 'assets/bomb.png');
-    this.load.audio('thud', ['assets/thud.mp3', 'assets/thud.ogg']);
   }
 
   create () {
