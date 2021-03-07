@@ -8,7 +8,22 @@ export default class PlayScene extends Scene {
   create () {
     this.add.image(400, 300, 'sky');
     debugger;
-    this.add.sprite(400, 300, 'bear').play({ key: 'walk-r', repeat: -1 }).setScale(10);
+    
+    
+    const map = this.make.tilemap({ key: 'tilemap' });
+
+    const tileset = map.addTilesetImage('nature-tileset');
+
+    map.createLayer('Sky', tileset);
+    map.createLayer('Details', tileset);
+    map.createLayer('Platform-1', tileset);
+    map.createLayer('Platform-2', tileset);
+    map.createLayer('Platform-3', tileset);
+    map.createLayer('Platform-4', tileset);
+    map.createLayer('Platform-5', tileset);
+    map.createLayer('Platform-6', tileset);
+
+    this.add.sprite(200, 272, 'bear').play({ key: 'walk-r', repeat: -1 });
   }
   
   update () {
