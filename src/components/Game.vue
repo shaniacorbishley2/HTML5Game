@@ -1,6 +1,6 @@
 <template>
-  <div :id="containerId" v-if="downloaded" />
-  <div class="placeholder" v-else>
+  <div class="main" :id="containerId" v-if="downloaded" />
+  <div class="main" v-else>
     Downloading ...
   </div>
 </template>
@@ -17,7 +17,6 @@ export default class Game extends Vue {
   public containerId: string = 'game-container';
     
   async mounted() {
-    debugger;
     const game = await import(/* webpackChunkName: "game" */ '../game/game');
     this.downloaded = true;
     this.$nextTick(() => {
@@ -31,10 +30,8 @@ export default class Game extends Vue {
 }
 </script>
 
-
-<style lang="scss" scoped>
-.placeholder {
-  font-size: 2rem;
-  font-family: 'Courier New', Courier, monospace;
+<style lang="scss">
+div {
+  background-color: $red-g;
 }
 </style>

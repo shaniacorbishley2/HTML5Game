@@ -1,18 +1,21 @@
   
-import { Scene } from 'phaser'
+import { Scene } from 'phaser';
 
 export default class BootScene extends Scene {
   constructor () {
-    super({ key: 'BootScene' })
+    super({ key: 'BootScene' });
   }
 
   preload () {
     debugger;
+
     this.load.image('sky', 'assets/sky.png');
-    this.load.image('bomb', 'assets/bomb.png');
+
+    this.load.aseprite('bear', 'assets/bear-sprite.png', 'assets/bear-sprite.json');
   }
 
   create () {
-    this.scene.start('PlayScene')
+    this.anims.createFromAseprite('bear');
+    this.scene.start('PlayScene');
   }
 }

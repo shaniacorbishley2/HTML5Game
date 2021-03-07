@@ -1,6 +1,6 @@
-import Phaser from 'phaser'
-import BootScene from './scenes/BootScene'
-import PlayScene from './scenes/PlayScene'
+import Phaser from 'phaser';
+import BootScene from './scenes/BootScene';
+import PlayScene from './scenes/PlayScene';
 
 
 function launch(containerId: any) {
@@ -9,6 +9,9 @@ function launch(containerId: any) {
     width: 800,
     height: 600,
     parent: containerId,
+    render: {
+      pixelArt: true
+    },
     physics: {
       default: 'arcade',
       arcade: {
@@ -17,8 +20,8 @@ function launch(containerId: any) {
       }
     },
     scene: [BootScene, PlayScene]
-  })
+  });
 }
 
-export default launch
-export { launch }
+export default launch;
+export { launch };
