@@ -2,14 +2,10 @@ import { Scene } from 'phaser';
 
 export default class PlayScene extends Scene {
   constructor () {
-    super({ key: 'PlayScene' });
+    super({ key: 'playScene' });
   }
 
   create () {
-    this.add.image(400, 300, 'sky');
-    debugger;
-    
-    
     const map = this.make.tilemap({ key: 'tilemap' });
 
     const tileset = map.addTilesetImage('nature-tileset');

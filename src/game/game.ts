@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
-import BootScene from './scenes/BootScene';
-import PlayScene from './scenes/PlayScene';
+import BootScene from './scenes/bootScene';
+import MainMenuScene from './scenes/mainMenuScene';
+import PlayScene from './scenes/playScene';
 
 
 function launch(containerId: any) {
@@ -12,6 +13,10 @@ function launch(containerId: any) {
     render: {
       pixelArt: true
     },
+    scale: {
+      mode: Phaser.Scale.FIT,
+      autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     physics: {
       default: 'arcade',
       arcade: {
@@ -19,7 +24,7 @@ function launch(containerId: any) {
         debug: false
       }
     },
-    scene: [BootScene, PlayScene]
+    scene: [BootScene, PlayScene, MainMenuScene]
   });
 }
 

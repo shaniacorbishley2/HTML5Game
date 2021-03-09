@@ -31,7 +31,5 @@ export default class Game extends Vue {
 </script>
 
 <style lang="scss">
-div {
-  background-color: $red-g;
-}
+
 </style>
