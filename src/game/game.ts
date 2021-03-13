@@ -21,7 +21,8 @@ function launch(containerId: any) {
       default: 'arcade',
       arcade: {
         gravity: { y: 300 },
-        debug: false
+        debug: false,
+        
       }
     },
     scene: [BootScene, PlayScene, MainMenuScene]
