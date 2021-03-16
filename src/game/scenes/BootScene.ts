@@ -8,8 +8,6 @@ export default class BootScene extends Scene {
   }
 
   preload () {
-    debugger;
-
     // Character
     this.load.aseprite('bear', 'assets/bear-sprite.png', 'assets/bear-sprite.json');
 
