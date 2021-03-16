@@ -4,20 +4,12 @@ export default class Controls {
 
     constructor(player: MainPlayer) {
         this.player = player;
-        this.createControls();
     }
     public player: MainPlayer;
 
-    public cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-
-    public createControls() {
-        this.cursors = this.player.scene.input.keyboard.createCursorKeys();
-    }
-
-    public checkControls() {
-        if (this.cursors.left.isDown) {
-            //player method
+    public addControlListeners() {
+        this.player.scene.input.keyboard.on('keydown-LEFT', () => {
             this.player.movePlayerX(-60);
-        }
+        });
     }
 }

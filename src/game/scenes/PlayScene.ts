@@ -6,9 +6,9 @@ export default class PlayScene extends Scene {
   constructor () {
     super({ key: 'playScene' });
   }
-  public player1!: MainPlayer;
+  private player1!: MainPlayer;
 
-  public controls!: Controls;
+  private controls!: Controls;
 
   private layers: string[] = ['Sky', 'Details', 'Platform-1', 'Platform-2', 'Platform-3', 
                                     'Platform-4', 'Platform-5', 'Platform-6'];
@@ -39,13 +39,11 @@ export default class PlayScene extends Scene {
 
     // Create controls
     this.controls = new Controls(this.player1);
-
+    this.controls.addControlListeners();
   }
   
   update () {
-    // update
-    this.controls.checkControls();
-
+    //
   }
 
   intervalCallback () {
