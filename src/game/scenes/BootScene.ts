@@ -28,7 +28,10 @@ export default class BootScene extends Scene {
   }
 
   create () {
+    // Creates sprite animation using aesprite json
     this.anims.createFromAseprite('bear');
+
+    // Starts the main menu on load
     this.scene.start('mainMenuScene');
   }
 }

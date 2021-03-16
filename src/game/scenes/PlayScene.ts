@@ -9,27 +9,35 @@ export default class PlayScene extends Scene {
   public player1!: MainPlayer;
 
   public controls!: Controls;
+
+  private layers: string[] = ['Sky', 'Details', 'Platform-1', 'Platform-2', 'Platform-3', 
+                                    'Platform-4', 'Platform-5', 'Platform-6'];
+  
+  private map!: Phaser.Tilemaps.Tilemap;
+
+  private tileset!: Phaser.Tilemaps.Tileset;
+
   create () {
-    const map = this.make.tilemap({ key: 'tilemap' });
+    this.map = this.make.tilemap({ key: 'tilemap' });
 
-    const tileset = map.addTilesetImage('nature-tileset');
+    this.tileset = this.map.addTilesetImage('nature-tileset');
 
-    // Init tileset
-    map.createLayer('Sky', tileset);
-    map.createLayer('Details', tileset);
-    map.createLayer('Platform-1', tileset);
-    map.createLayer('Platform-2', tileset);
-    map.createLayer('Platform-3', tileset);
-    map.createLayer('Platform-4', tileset);
-    map.createLayer('Platform-5', tileset);
-    map.createLayer('Platform-6', tileset);
+    // Init tilemap layers
+    const tilemapLayers = this.initTilemapLayers();
     
+    // Filter out the layers that don't need collisions
+    const collisionLayers = this.filterCollisionLayers(tilemapLayers);
+
     // Create player
-    this.player1 = new MainPlayer(this); //this.player1 = this.add.sprite(200, 272, 'bear').play({ key: 'walk-r', repeat: -1 });
+    this.player1 = new MainPlayer(this); 
     
-    // Add Player
+    // Add player
     this.add.existing(this.player1);
 
+    // Set collisions once player is created
+    this.setCollisions(collisionLayers);
+
+    // Create controls
     this.controls = new Controls(this.player1);
 
   }
@@ -42,6 +50,31 @@ export default class PlayScene extends Scene {
 
   intervalCallback () {
     // store.commit('setPosition', {x:Math.round(this.bomb.x), y:Math.round(this.bomb.y)});
+  }
+
+  // Init all layers
+  public initTilemapLayers(): Phaser.Tilemaps.TilemapLayer[] {
+    return this.layers.map((value: string) => {
+      return this.map.createLayer(value, this.tileset);
+    });
+  }
+
+  // Add collisions on platform and allow collisions between player and platforms
+  public setCollisions(layers: Phaser.Tilemaps.TilemapLayer[] ) {
+    layers.forEach((value: Phaser.Tilemaps.TilemapLayer) => {
+
+      this.map.setCollisionBetween(0, 74, true, false, value);
+      this.physics.add.collider(this.player1, value);
+
+    });     
+        
+  }
+
+  // Filter the layers to only contain needed collision layers
+  public filterCollisionLayers(layers: Phaser.Tilemaps.TilemapLayer[] ): Phaser.Tilemaps.TilemapLayer[] {
+    return layers.filter((value: Phaser.Tilemaps.TilemapLayer) => {
+      return (value.layer.name !== 'Sky' && value.layer.name !== 'Details');
+    });
   }
 
 }

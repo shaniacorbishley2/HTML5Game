@@ -17,7 +17,7 @@ export default class Controls {
     public checkControls() {
         if (this.cursors.left.isDown) {
             //player method
-            this.player.movePlayerX(100);
+            this.player.movePlayerX(-60);
         }
     }
 }
