@@ -7,7 +7,7 @@ export default class BootScene extends Scene {
     super({ key: 'bootScene' });
   }
 
-  preload () {
+  public preload () {
     // Character
     this.load.aseprite('bear', 'assets/bear-sprite.png', 'assets/bear-sprite.json');
 
@@ -25,7 +25,7 @@ export default class BootScene extends Scene {
     this.load.image('play-text', 'assets/play-text.png');
   }
 
-  create () {
+  public create () {
     // Creates sprite animation using aesprite json
     this.anims.createFromAseprite('bear');
 

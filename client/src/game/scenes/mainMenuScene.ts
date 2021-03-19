@@ -5,7 +5,7 @@ export default class MainMenuScene extends Scene {
         super({ key: 'mainMenuScene' });
     }
 
-    create() {
+    public create() {
         // Add background
         this.add.image(0, 0, 'main-menu-background').setOrigin(0).setDepth(0);
 
