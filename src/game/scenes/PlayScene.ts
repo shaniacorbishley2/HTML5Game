@@ -73,5 +73,4 @@ export default class PlayScene extends Scene {
       return (value.layer.name !== 'Sky' && value.layer.name !== 'Details');
     });
   }
-
 }

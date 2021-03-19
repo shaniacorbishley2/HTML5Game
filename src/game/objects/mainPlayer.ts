@@ -5,44 +5,34 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
         this.setGravity(0, 5);
     }
 
-    public timer!: Phaser.Time.TimerEvent;
-
-    public jumpPower: number = 0;
-    
     // Move player left or right
     public movePlayerX(position: number) {
         this.setVelocityX(position);
         position < 0 ? this.anims.play('walk-l', true) : this.anims.play('walk-r', true);
     }
 
-    // idle - player not moving
+    // Player not moving, set to idle state
     public idle(direction: string) {
         this.setVelocityX(0);
         direction === 'left' ? this.anims.play('idle-l', true) : this.anims.play('idle-r', true);
     }
 
-    // jump 
-    public startJump(position: number) {
-        this.timer = this.scene.time.addEvent({
-            delay: 100,
-            callback: this.increaseJumpPower,
-            callbackScope: this,
-            loop: true
-        });
-
-        this.setVelocityY(position + this.jumpPower);
+    // Starts the jump 
+    public startJump() {
+        this.setVelocityY(-100);
         this.anims.play('jump-l', true);
     }
 
-    public endJump() {
-        this.timer.remove();
-        this.jumpPower = 0;
+    // Jump to the side
+    public sideJump(direction: string) {
+        this.setVelocityY(-60);
+        this.setVelocityX(direction === 'left' ? -10 : 10);
+        direction === 'left' ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
     }
 
-    public increaseJumpPower() {
-        if (this.jumpPower > -5){
-            this.jumpPower -=1;
-        }
+    // Ends players jump
+    public endJump() {
+        this.setVelocityY(0);
     }
 
     // Sets hit box for the player to be exact pixel height

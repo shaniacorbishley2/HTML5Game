@@ -24,6 +24,14 @@ export default class Controls {
 
     public checkControls() {
 
+        if (this.keys.left.isDown && this.keys.up.isDown) {
+            this.player.sideJump('left');
+        }
+
+        if (this.keys.right.isDown && this.keys.up.isDown) {
+            this.player.sideJump('right');
+        }
+
         if (this.keys.left.isDown) {
             this.player.movePlayerX(-60);
         }
@@ -32,8 +40,8 @@ export default class Controls {
             this.player.movePlayerX(60);
         }
 
-        else if (this.keys.up.isDown) {
-            this.player.startJump(-60);
+        else if (this.keys.up.isDown && this.player.body.blocked.down) {
+            this.player.startJump();
         }
 
         else {
