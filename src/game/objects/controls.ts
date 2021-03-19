@@ -37,7 +37,7 @@ export default class Controls {
         }
 
         else {
-            this.player.idle();
+            this.player.idle('left');
         }
     }
 }
