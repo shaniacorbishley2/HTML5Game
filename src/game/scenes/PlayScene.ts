@@ -17,7 +17,7 @@ export default class PlayScene extends Scene {
 
   private tileset!: Phaser.Tilemaps.Tileset;
 
-  create () {
+  public create () {
     this.map = this.make.tilemap({ key: 'tilemap' });
 
     this.tileset = this.map.addTilesetImage('nature-tileset');
@@ -39,15 +39,14 @@ export default class PlayScene extends Scene {
 
     // Create controls
     this.controls = new Controls(this.player1);
-    this.controls.addControlListeners();
+    this.controls.createKeys();
+
   }
   
-  update () {
+  public update () {
     //
-  }
-
-  intervalCallback () {
-    // store.commit('setPosition', {x:Math.round(this.bomb.x), y:Math.round(this.bomb.y)});
+    this.controls.checkControls();
+    this.player1.setCollisionBox();
   }
 
   // Init all layers

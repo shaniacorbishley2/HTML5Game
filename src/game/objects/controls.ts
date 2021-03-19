@@ -1,4 +1,5 @@
 import MainPlayer from './mainPlayer';
+import Keys from './interfaces/keys';
 
 export default class Controls {
 
@@ -7,9 +8,36 @@ export default class Controls {
     }
     public player: MainPlayer;
 
-    public addControlListeners() {
-        this.player.scene.input.keyboard.on('keydown-LEFT', () => {
+    private keys!: Keys;
+
+    public createKeys() {
+
+        this.keys = this.player.scene.input.keyboard.addKeys({
+            left:  Phaser.Input.Keyboard.KeyCodes.LEFT,
+            right:  Phaser.Input.Keyboard.KeyCodes.RIGHT,
+            up:  Phaser.Input.Keyboard.KeyCodes.UP,
+            down:  Phaser.Input.Keyboard.KeyCodes.DOWN
+        }) as Keys;
+
+        console.log(this.keys);
+    }
+
+    public checkControls() {
+
+        if (this.keys.left.isDown) {
             this.player.movePlayerX(-60);
-        });
+        }
+
+        else if (this.keys.right.isDown) {
+            this.player.movePlayerX(60);
+        }
+
+        else if (this.keys.up.isDown) {
+            this.player.startJump(-60);
+        }
+
+        else {
+            this.player.idle();
+        }
     }
 }
