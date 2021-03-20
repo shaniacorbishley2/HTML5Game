@@ -11,7 +11,7 @@ export default class MainMenuScene extends Scene {
 
         // Add text
         this.add.image(315, 60, 'menu-text');
-        const playButton = this.add.image(315, 160, 'play-text');
+        const playButton: Phaser.GameObjects.Image = this.add.image(315, 160, 'play-text');
 
         // Play Button logic
         playButton.setInteractive();

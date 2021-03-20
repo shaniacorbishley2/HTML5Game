@@ -23,10 +23,10 @@ export default class PlayScene extends Scene {
     this.tileset = this.map.addTilesetImage('nature-tileset');
 
     // Init tilemap layers
-    const tilemapLayers = this.initTilemapLayers();
+    const tilemapLayers: Phaser.Tilemaps.TilemapLayer[] = this.initTilemapLayers();
     
     // Filter out the layers that don't need collisions
-    const collisionLayers = this.filterCollisionLayers(tilemapLayers);
+    const collisionLayers: Phaser.Tilemaps.TilemapLayer[] = this.filterCollisionLayers(tilemapLayers);
 
     // Create player
     this.player1 = new MainPlayer(this); 

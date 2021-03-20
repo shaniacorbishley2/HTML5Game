@@ -1,18 +1,20 @@
-// src/server.ts
-import * as express from "express";
+import express from 'express';
+import http from 'http';
 
-const app = express();
-app.set("port", process.env.PORT || 3000);
+export default class Server {
+  public app = express();
 
-var http = require("http").Server(app);
+  public http: http.Server = http.createServer(this.app);
 
-// simple '/' endpoint sending a Hello World
-// response
-app.get("/", (req: any, res: any) => {
-  res.send("hello world");
-});
+  public port = 3000;
 
-// start our simple server up on localhost:3000
-const server = http.listen(3000, function() {
-  console.log("listening on *:3000");
-});
+  public start() {
+  
+    this.app.get('/', (req, res) => {
+      res.send('hello world');
+    });
+
+    this.http.listen(this.port);
+    console.log(`server is listening on ${this.port}`);
+  }
+}

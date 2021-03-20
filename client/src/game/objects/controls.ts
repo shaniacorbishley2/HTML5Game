@@ -33,11 +33,11 @@ export default class Controls {
         }
 
         if (this.keys.left.isDown) {
-            this.player.movePlayerX(-60);
+            this.player.movePlayerLeft();
         }
 
         else if (this.keys.right.isDown) {
-            this.player.movePlayerX(60);
+            this.player.movePlayerRight();
         }
 
         else if (this.keys.up.isDown && this.player.body.blocked.down) {

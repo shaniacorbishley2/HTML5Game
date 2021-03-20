@@ -1,14 +1,25 @@
 export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
+
+    private moveVelocity: number = 60;
+
+    private jumpVelocity: number = -150;
+
     constructor (scene: Phaser.Scene) {
         super(scene, 340, 0, 'bear');
         scene.physics.world.enable(this);
         this.setGravity(0, 5);
     }
 
-    // Move player left or right
-    public movePlayerX(position: number) {
-        this.setVelocityX(position);
-        position < 0 ? this.anims.play('walk-l', true) : this.anims.play('walk-r', true);
+    // Move player left 
+    public movePlayerLeft() {
+        this.setVelocityX(-this.moveVelocity);
+        this.anims.play('walk-l', true);
+    }
+
+    // Move player right 
+    public movePlayerRight() {
+        this.setVelocityX(this.moveVelocity);
+        this.anims.play('walk-r', true);
     }
 
     // Player not moving, set to idle state
@@ -19,13 +30,13 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
 
     // Starts the jump 
     public startJump() {
-        this.setVelocityY(-100);
+        this.setVelocityY(this.jumpVelocity);
         this.anims.play('jump-l', true);
     }
 
     // Jump to the side
     public sideJump(direction: string) {
-        this.setVelocityY(-60);
+        this.setVelocityY(this.jumpVelocity);
         this.setVelocityX(direction === 'left' ? -10 : 10);
         direction === 'left' ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
     }
@@ -37,7 +48,6 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
 
     // Sets hit box for the player to be exact pixel height
     public setCollisionBox() {
-        this.body.setSize(
-            16, 30, true);
+        this.body.setSize(16, 30, true);
     }
 }
