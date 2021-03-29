@@ -1,4 +1,4 @@
-import Server from '../src/server';
+import GameServer from './gameServer';
 
-const server: Server = new Server;
+const server: GameServer = new GameServer;
 server.start();
