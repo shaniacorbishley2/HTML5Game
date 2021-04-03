@@ -18,8 +18,6 @@ export default class Controls {
             up:  Phaser.Input.Keyboard.KeyCodes.UP,
             down:  Phaser.Input.Keyboard.KeyCodes.DOWN
         }) as Keys;
-
-        console.log(this.keys);
     }
 
     public checkControls() {
