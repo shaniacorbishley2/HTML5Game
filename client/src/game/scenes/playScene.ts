@@ -29,7 +29,7 @@ export default class PlayScene extends Scene {
     this.initMap();
 
     //SOCKET IO - this would change to a live
-    this.socket = io('http://localhost:3000');
+    this.socket = io('http://10.106.100.123:3000');
 
     this.socket.on('connect', () => {
       console.log('connected');
@@ -97,7 +97,7 @@ export default class PlayScene extends Scene {
   private addPlayer(playerId: string) {
     
     const player = new MainPlayer(this, playerId); 
-
+    console.log('PLAYER ALREADY IN GAME ID:' + playerId);
     // add to the players array
     this.players.push(player);
   
@@ -111,10 +111,12 @@ export default class PlayScene extends Scene {
   }
 
   private removePlayer(playerId: string) {
+    console.log('DISCONNECT');
     console.log(this.players);
     this.players = this.players.filter((player) => {
       if (player.playerId === playerId){
         player.destroy();
+        console.log(player.playerId);
       }
       return player.playerId !== playerId;
     });

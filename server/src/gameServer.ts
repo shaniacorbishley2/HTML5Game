@@ -9,14 +9,14 @@ export default class GameServer {
 
   private players: string[] = [];
 
-  private io = new Server(this.server, {
+  private io: Server = new Server(this.server, {
     cors: {
       origin: "*"
     }
   });
 
   public start() {
-    this.server.listen(3000, () => {
+    this.server.listen(3000, '10.106.100.123', () => {
       console.log(`App running on port ${3000}`);
     });
 
@@ -27,6 +27,7 @@ export default class GameServer {
         this.userDisconnect(socket.id);
       });
     });
+
   }
 
   private userConnected(socketId: string) {
@@ -38,8 +39,8 @@ export default class GameServer {
     
     if (this.players.length >= 1) {
       // If there is already one player in the game, we need to call the logic to 'add another player' emit the event on created
-      this.players.forEach(() => {
-        this.io.emit('addPlayer', [socketId]);
+      this.players.forEach((player: string) => {
+        this.io.emit('addPlayer', [player]);
       })
     }
 

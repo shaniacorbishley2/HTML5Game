@@ -32,6 +32,7 @@ module.exports = {
   devServer: {
     open: true,
     hot: false,
-    host: 'html5game.local'
+    port: 8080,
+    host: '10.106.100.123'
   }
 };
