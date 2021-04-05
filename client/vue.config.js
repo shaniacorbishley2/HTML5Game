@@ -3,9 +3,9 @@ const path = require('path');
 module.exports = {
   publicPath: '.',
   css: {
-    loaderOptions: {
+    loaderOptions: { 
       sass: {
-        additionalData: '@import "@/scss/_main.scss";'
+        additionalData: '@import "@/scss/variables/variables.scss";'
       }
     }
   },
@@ -33,6 +33,6 @@ module.exports = {
     open: true,
     hot: false,
     port: 8080,
-    host: '10.106.100.123'
+    host: '10.106.100.35'
   }
 };

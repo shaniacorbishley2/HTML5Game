@@ -16,7 +16,7 @@ export default class GameServer {
   });
 
   public start() {
-    this.server.listen(3000, '10.106.100.123', () => {
+    this.server.listen(3000, '10.106.100.35', () => {
       console.log(`App running on port ${3000}`);
     });
 

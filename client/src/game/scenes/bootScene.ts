@@ -14,6 +14,9 @@ export default class BootScene extends Scene {
     // Tileset
     this.load.image('nature-tileset',  'assets/nature-tileset.png');
 
+    // Bomb - enermy 1
+    this.load.image('bomb', 'assets/bomb.png');
+
     // Tilemap
     this.load.tilemapTiledJSON('tilemap', 'assets/nature-tilemap.json');
     

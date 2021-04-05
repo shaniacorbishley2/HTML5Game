@@ -6,6 +6,8 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
 
     public playerId!: string;
 
+    public playerHealth: number = 100;
+
     constructor (scene: Phaser.Scene, playerId: string) {
         super(scene, 340, 0, 'bear');
         this.playerId = playerId;
@@ -52,5 +54,9 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
     // Sets hit box for the player to be exact pixel height
     public setCollisionBox() {
         this.body.setSize(16, 30, true);
+    }
+
+    public playerHit() {
+        console.log('PLAYER HIT!!');
     }
 }

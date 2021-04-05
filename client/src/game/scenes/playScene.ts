@@ -1,4 +1,4 @@
-import { Scene } from 'phaser';
+import { GameObjects, Scene } from 'phaser';
 import Controls from '../objects/controls';
 import MainPlayer from '../objects/mainPlayer';
 import { io, Socket } from 'socket.io-client';
@@ -24,19 +24,22 @@ export default class PlayScene extends Scene {
 
   private tilemapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
+  private enermies: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = [];
+
   public create () {
 
     this.initMap();
 
     //SOCKET IO - this would change to a live
-    this.socket = io('http://10.106.100.123:3000');
+    this.socket = io('10.106.100.35:3000');
 
     this.socket.on('connect', () => {
 
     });
-
+    this.addEnermies();    
+    
     this.createPlayer1();
-
+  
     this.listeners();
   }
   
@@ -55,15 +58,28 @@ export default class PlayScene extends Scene {
   }
 
   // Add collisions on platform and allow collisions between player and platforms
-  private setCollisions(layers: Phaser.Tilemaps.TilemapLayer[] ) {
-    layers.forEach((value: Phaser.Tilemaps.TilemapLayer) => {
+  private setCollisions(type: string) {
+    this.collisionLayers.forEach((layer: Phaser.Tilemaps.TilemapLayer) => {
 
-      this.map.setCollisionBetween(0, 74, true, false, value);
+      this.map.setCollisionBetween(0, 74, true, false, layer);
 
-      this.players.forEach((player) => {
-        this.physics.add.collider(player, value);
-      });
-      
+      if (type === 'player') {
+        this.players.forEach((player) => {
+          this.physics.add.collider(player, layer);
+          player.setCollideWorldBounds(true);
+        });
+      }
+
+      if (type === 'enermy') {
+        this.enermies.forEach((enermy) => {
+          this.physics.add.collider(enermy, layer);
+
+          this.players.forEach((player) => {
+            this.physics.add.collider(enermy, player, player.playerHit);
+            enermy.setCollideWorldBounds(true);
+          });
+        });
+      }
     });        
   }
 
@@ -75,6 +91,9 @@ export default class PlayScene extends Scene {
   }
 
   private initMap() {
+
+    this.physics.world.setBounds( 0, 0, 640, 320);
+
     this.map = this.make.tilemap({ key: 'tilemap' });
 
     this.tileset = this.map.addTilesetImage('nature-tileset');
@@ -84,6 +103,8 @@ export default class PlayScene extends Scene {
     
     // Filter out the layers that don't need collisions
     this.collisionLayers = this.filterCollisionLayers(this.tilemapLayers);
+
+    
   }
 
   private createPlayer1() {
@@ -104,7 +125,7 @@ export default class PlayScene extends Scene {
     this.add.existing(player);
 
     // Set collisions once player is created
-    this.setCollisions(this.collisionLayers);
+    this.setCollisions('player');
 
     return player;
   }
@@ -133,4 +154,34 @@ export default class PlayScene extends Scene {
       this.removePlayer(playerId[0]);
     });
   }
+
+  private addBomb() {
+    if (this.enermies.length < 5) {
+      const bomb = this.physics.add.image(340, 0, 'bomb');
+
+      bomb.setScale(0.5);
+
+      this.physics.world.enable(bomb);
+
+      bomb.setBounce(1);
+
+      bomb.setVelocity(50, 20);
+
+      this.enermies.push(bomb);
+
+      console.log(this.enermies.length);
+
+      this.setCollisions('enermy');
+    }
+  }
+
+  private addEnermies() {
+    
+      this.time.addEvent({
+        delay: 4000,
+        callback: this.addBomb,
+        callbackScope: this,
+        loop: true
+      });
+    }
 }

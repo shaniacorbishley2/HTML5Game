@@ -22,11 +22,11 @@ export default class Controls {
 
     public checkControls() {
 
-        if (this.keys.left.isDown && this.keys.up.isDown) {
+        if (this.keys.left.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
             this.player.sideJump('left');
         }
 
-        if (this.keys.right.isDown && this.keys.up.isDown) {
+        if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
             this.player.sideJump('right');
         }
 

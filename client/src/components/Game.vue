@@ -1,5 +1,7 @@
 <template>
-  <div class="main" :id="containerId" v-if="downloaded" />
+  <div class="main" :id="containerId" v-if="downloaded">
+    <HealthBar/>
+  </div>
   <div class="main" v-else>
     Downloading ...
   </div>
@@ -9,8 +11,11 @@
 <script lang="ts">
 import Vue from 'vue';
 import Component from 'vue-class-component';
+import HealthBar from './HealthBar.vue';
 
-@Component
+@Component({
+  components: { HealthBar }
+})
 export default class Game extends Vue {
   public downloaded: boolean = false;
   public gameInstance: any = null;
@@ -29,7 +34,3 @@ export default class Game extends Vue {
   }
 }
 </script>
-
-<style lang="scss">
-
-</style>
