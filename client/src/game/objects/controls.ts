@@ -1,5 +1,6 @@
 import MainPlayer from './mainPlayer';
 import Keys from './interfaces/keys';
+import KeyPressed from '../enums/keyPressed';
 
 export default class Controls {
 
@@ -9,6 +10,8 @@ export default class Controls {
     public player: MainPlayer;
 
     private keys!: Keys;
+
+    private lastKeyPressed: KeyPressed = KeyPressed.None;
 
     public createKeys() {
 
@@ -23,18 +26,22 @@ export default class Controls {
     public checkControls() {
 
         if (this.keys.left.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
+            this.lastKeyPressed = KeyPressed.Left;
             this.player.sideJump('left');
         }
 
         if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
+            this.lastKeyPressed = KeyPressed.Right;
             this.player.sideJump('right');
         }
 
         if (this.keys.left.isDown) {
+            this.lastKeyPressed = KeyPressed.Left;
             this.player.movePlayerLeft();
         }
 
         else if (this.keys.right.isDown) {
+            this.lastKeyPressed = KeyPressed.Right;
             this.player.movePlayerRight();
         }
 
@@ -43,7 +50,7 @@ export default class Controls {
         }
 
         else {
-            this.player.idle('left');
+            this.player.idle(this.lastKeyPressed.valueOf() === KeyPressed.Left ? 'left' : 'right');
         }
     }
 }
