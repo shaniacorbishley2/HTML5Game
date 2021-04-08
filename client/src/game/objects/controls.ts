@@ -26,23 +26,23 @@ export default class Controls {
     public checkControls() {
 
         if (this.keys.left.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-            this.lastKeyPressed = KeyPressed.Left;
             this.player.sideJump('left');
+            this.lastKeyPressed = KeyPressed.Left;
         }
 
         if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-            this.lastKeyPressed = KeyPressed.Right;
             this.player.sideJump('right');
+            this.lastKeyPressed = KeyPressed.Right;
         }
 
         if (this.keys.left.isDown) {
-            this.lastKeyPressed = KeyPressed.Left;
             this.player.movePlayerLeft();
+            this.lastKeyPressed = KeyPressed.Left;
         }
 
         else if (this.keys.right.isDown) {
-            this.lastKeyPressed = KeyPressed.Right;
             this.player.movePlayerRight();
+            this.lastKeyPressed = KeyPressed.Right;
         }
 
         else if (this.keys.up.isDown && this.player.body.blocked.down) {
@@ -50,7 +50,7 @@ export default class Controls {
         }
 
         else {
-            this.player.idle(this.lastKeyPressed.valueOf() === KeyPressed.Left ? 'left' : 'right');
+            this.player.idle(this.lastKeyPressed.toString());
         }
     }
 }

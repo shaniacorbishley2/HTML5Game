@@ -1,6 +1,6 @@
 enum KeyPressed {
-    None = 0,
-    Left = 1,
-    Right = 2
+    None,
+    Left = "left",
+    Right = "right"
 }
 export default KeyPressed
