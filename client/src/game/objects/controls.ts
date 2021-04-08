@@ -1,17 +1,21 @@
 import MainPlayer from './mainPlayer';
 import Keys from './interfaces/keys';
-import KeyPressed from './enums/keyPressed';
+import Movements from './enums/movements';
+import { io, Socket } from 'socket.io-client';
 
 export default class Controls {
 
-    constructor(player: MainPlayer) {
+    constructor(player: MainPlayer, socket: Socket) {
         this.player = player;
+        this.socket = socket;
     }
     public player: MainPlayer;
 
     private keys!: Keys;
 
-    private lastKeyPressed: KeyPressed = KeyPressed.None;
+    private socket!: Socket;
+
+    private lastKeyPressed: Movements = Movements.None;
 
     public createKeys() {
 
@@ -26,31 +30,47 @@ export default class Controls {
     public checkControls() {
 
         if (this.keys.left.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-            this.player.sideJump('left');
-            this.lastKeyPressed = KeyPressed.Left;
+            this.lastKeyPressed = Movements.SideJumpLeft;
+
+            this.player.sideJump(this.lastKeyPressed);
+
+            this.socket.emit('playerMoved', [this.player, 'side-jump-left']);
         }
 
         if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-            this.player.sideJump('right');
-            this.lastKeyPressed = KeyPressed.Right;
+            this.lastKeyPressed = Movements.SideJumpRight;
+
+            this.player.sideJump(this.lastKeyPressed);
+
+            this.socket.emit('playerMoved', [this.player, 'side-jump-right']);
         }
 
         if (this.keys.left.isDown) {
+            this.lastKeyPressed = Movements.Left;
+
             this.player.movePlayerLeft();
-            this.lastKeyPressed = KeyPressed.Left;
+
+            this.socket.emit('playerMoved', [this.player, 'left']);
         }
 
         else if (this.keys.right.isDown) {
+            this.lastKeyPressed = Movements.Right;
+
             this.player.movePlayerRight();
-            this.lastKeyPressed = KeyPressed.Right;
+
+            this.socket.emit('playerMoved', [this.player, 'right']);
         }
 
         else if (this.keys.up.isDown && this.player.body.blocked.down) {
             this.player.startJump();
+
+            this.socket.emit('playerMoved', [this.player, 'jump']);
         }
 
         else {
-            this.player.idle(this.lastKeyPressed.toString());
+            this.player.idle(this.lastKeyPressed);
+
+            this.socket.emit('playerMoved', [this.player, `idle-${this.lastKeyPressed}`]);
         }
     }
 }

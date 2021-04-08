@@ -1,4 +1,5 @@
 import { store } from '../../store';
+import Movements from './enums/movements';
 export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
 
     private moveVelocity: number = 60;
@@ -29,9 +30,14 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Player not moving, set to idle state
-    public idle(direction: string) {
+    public idle(direction: Movements) {
         this.setVelocityX(0);
-        direction === 'left' ? this.anims.play('idle-l', true) : this.anims.play('idle-r', true);
+        if (direction === Movements.Left || direction === Movements.SideJumpLeft) {
+            this.anims.play('idle-l', true)
+        }
+        if (direction === Movements.Right || direction === Movements.SideJumpRight) {
+            this.anims.play('idle-r', true);
+        }
     }
 
     // Starts the jump 
@@ -41,10 +47,10 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Jump to the side
-    public sideJump(direction: string) {
+    public sideJump(direction: Movements) {
         this.setVelocityY(this.jumpVelocity);
-        this.setVelocityX(direction === 'left' ? -10 : 10);
-        direction === 'left' ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
+        this.setVelocityX(direction === Movements.SideJumpLeft ? -10 : 10);
+        direction === Movements.SideJumpLeft ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
     }
 
     // Ends players jump

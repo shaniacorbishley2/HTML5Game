@@ -7,6 +7,13 @@ import Enermy from '../objects/enermy';
 export default class PlayScene extends Scene {
   constructor () {
     super({ key: 'playScene' });
+
+    //SOCKET IO - this would change to a live
+    this.socket = io('10.106.100.35:3000');
+
+    this.socket.on('connect', () => {
+
+    });
   }
   private controls!: Controls;
 
@@ -31,12 +38,6 @@ export default class PlayScene extends Scene {
 
     this.initMap();
 
-    //SOCKET IO - this would change to a live
-    this.socket = io('10.106.100.35:3000');
-
-    this.socket.on('connect', () => {
-
-    });
     this.createEnermies();  
     
     this.createPlayer1();
@@ -173,7 +174,7 @@ export default class PlayScene extends Scene {
 
   private addPlayerControls(player: MainPlayer) {
     // Create controls
-    this.controls = new Controls(player);
+    this.controls = new Controls(player, this.socket);
     this.controls.createKeys();
   }
 

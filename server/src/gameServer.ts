@@ -21,16 +21,16 @@ export default class GameServer {
     });
 
     this.io.on('connection',  (socket) => {
-      this.userConnected(socket.id);
+      this.playerConnected(socket.id);
 
       socket.on('disconnect', () => {
-        this.userDisconnect(socket.id);
+        this.playerDisconnect(socket.id);
       });
     });
 
   }
 
-  private userConnected(socketId: string) {
+  private playerConnected(socketId: string) {
 
     // TODO: if there are 5 players already then the 6th player has to be a spectator
     // If the game is in process and a player leaves, 6th player cannot join until the game has ended
@@ -46,13 +46,17 @@ export default class GameServer {
 
     // If there is only one player then continue as normal
     this.players.push(socketId);
-    console.log(`User ${socketId} connected`);
+    console.log(`player ${socketId} connected`);
   }
 
 
-  private userDisconnect(socketId: string) {
-    console.log(`User ${socketId} disconnected`);
+  private playerDisconnect(socketId: string) {
+    console.log(`player ${socketId} disconnected`);
     this.io.emit('removePlayer', [socketId]);
     this.players = this.players.filter(player => player !== socketId);
+  }
+
+  private playerMoved() {
+    
   }
 }
