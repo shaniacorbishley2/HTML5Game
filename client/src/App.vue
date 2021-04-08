@@ -13,18 +13,5 @@ import Game from './components/Game.vue';
 @Component({
   components: { Game }
 })
-export default class App extends Vue {
-  
-
-  public test() {
-    
-   
-  }
-
-  public created() {
-    this.test();
-
-  }
-  
-}
+export default class App extends Vue {}
 </script>

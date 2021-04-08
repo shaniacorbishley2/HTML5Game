@@ -26,12 +26,6 @@ export default class Game extends Vue {
     this.$nextTick(() => {
       this.gameInstance = game.launch(this.containerId)
     })
-
-    
-  }
-
-  created() {
-    console.log(this.$store);
   }
 
   destroyed() {

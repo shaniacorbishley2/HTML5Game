@@ -17,13 +17,6 @@ export default class HealthBar extends Vue {
     private maxHealth: number = 100;
 
     @PlayerModule.Getter public health;
-
-    public created() {
-         console.log("health is" + this.health);
-    }
-
-    public updateHealth() {
-        
-    }
+    
 }
 </script>

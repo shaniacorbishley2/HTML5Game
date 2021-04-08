@@ -1,6 +1,6 @@
 import MainPlayer from './mainPlayer';
 import Keys from './interfaces/keys';
-import KeyPressed from '../enums/keyPressed';
+import KeyPressed from './enums/keyPressed';
 
 export default class Controls {
 
