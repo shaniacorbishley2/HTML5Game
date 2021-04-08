@@ -15,7 +15,7 @@ export default class Controls {
 
     private socket!: Socket;
 
-    private lastKeyPressed: Movements = Movements.None;
+    private currentDirection: Movements = Movements.None;
 
     public createKeys() {
 
@@ -30,47 +30,60 @@ export default class Controls {
     public checkControls() {
 
         if (this.keys.left.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-            this.lastKeyPressed = Movements.SideJumpLeft;
+            this.currentDirection = Movements.SideJumpLeft;
 
-            this.player.sideJump(this.lastKeyPressed);
+            this.player.sideJump(this.currentDirection);
 
-            this.socket.emit('playerMoved', [this.player, 'side-jump-left']);
+            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
         }
 
         if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-            this.lastKeyPressed = Movements.SideJumpRight;
+            this.currentDirection = Movements.SideJumpRight;
 
-            this.player.sideJump(this.lastKeyPressed);
+            this.player.sideJump(this.currentDirection);
 
-            this.socket.emit('playerMoved', [this.player, 'side-jump-right']);
+            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
         }
 
         if (this.keys.left.isDown) {
-            this.lastKeyPressed = Movements.Left;
-
             this.player.movePlayerLeft();
 
-            this.socket.emit('playerMoved', [this.player, 'left']);
+            this.currentDirection = Movements.Left;
+
+            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
         }
 
         else if (this.keys.right.isDown) {
-            this.lastKeyPressed = Movements.Right;
 
             this.player.movePlayerRight();
 
-            this.socket.emit('playerMoved', [this.player, 'right']);
+            this.currentDirection = Movements.Right;
+
+
+            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
         }
 
         else if (this.keys.up.isDown && this.player.body.blocked.down) {
             this.player.startJump();
 
-            this.socket.emit('playerMoved', [this.player, 'jump']);
+            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
         }
 
         else {
-            this.player.idle(this.lastKeyPressed);
+            var idleDirection = Movements.None;
 
-            this.socket.emit('playerMoved', [this.player, `idle-${this.lastKeyPressed}`]);
+            if (this.currentDirection === Movements.Left || this.currentDirection === Movements.SideJumpLeft) {
+                idleDirection = Movements.IdleLeft
+                this.player.idle(idleDirection);
+                this.socket.emit('playerMoved', [this.player, idleDirection]);
+            }
+
+            else if (this.currentDirection === Movements.Right || this.currentDirection === Movements.SideJumpRight) {
+                idleDirection = Movements.IdleRight
+                this.player.idle(idleDirection);
+                this.socket.emit('playerMoved', [this.player, idleDirection]);
+                
+            }
         }
     }
 }

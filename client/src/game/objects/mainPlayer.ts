@@ -32,10 +32,10 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
     // Player not moving, set to idle state
     public idle(direction: Movements) {
         this.setVelocityX(0);
-        if (direction === Movements.Left || direction === Movements.SideJumpLeft) {
+        if (direction === Movements.IdleLeft) {
             this.anims.play('idle-l', true)
         }
-        if (direction === Movements.Right || direction === Movements.SideJumpRight) {
+        else if (direction === Movements.IdleRight) {
             this.anims.play('idle-r', true);
         }
     }
