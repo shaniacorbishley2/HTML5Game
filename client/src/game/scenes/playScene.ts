@@ -11,7 +11,7 @@ export default class PlayScene extends Scene {
   private controls!: Controls;
 
   private layers: string[] = ['Sky', 'Details', 'Platform-1', 'Platform-2', 'Platform-3', 
-                                    'Platform-4', 'Platform-5', 'Platform-6'];
+                                    'Platform-4', 'Platform-5', 'Platform-6', 'Blocks-1', 'Blocks-2','Blocks-3', 'Blocks-4', 'Blocks-5', 'Blocks-6', 'Blocks-7', 'Blocks-8', 'Bridge'];
   
   private map!: Phaser.Tilemaps.Tilemap;
 
