@@ -9,8 +9,7 @@
 
 
 <script lang="ts">
-import Vue from 'vue';
-import Component from 'vue-class-component';
+import { Component, Vue } from 'vue-property-decorator';
 import HealthBar from './HealthBar.vue';
 
 @Component({
@@ -27,6 +26,12 @@ export default class Game extends Vue {
     this.$nextTick(() => {
       this.gameInstance = game.launch(this.containerId)
     })
+
+    
+  }
+
+  created() {
+    console.log(this.$store);
   }
 
   destroyed() {

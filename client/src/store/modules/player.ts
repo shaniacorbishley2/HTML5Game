@@ -1,36 +1,37 @@
-import { Module } from 'vuex';
-import { RootState } from '../store';
-import { GetterTree } from 'vuex';
-import { MutationTree } from 'vuex';
-import { ActionTree } from 'vuex';
+import {GetterTree, MutationTree, ActionTree, Module } from 'vuex';
+import  IRootState  from '../states/interfaces';
+import IPlayerState from '../states/interfaces/playerState';
 import PlayerState from '../states/playerState';
 
-const state: PlayerState = {
-    health: (state: PlayerState) => state.health
+export const state: IPlayerState = new PlayerState();
+
+export const getters: GetterTree<IPlayerState, IRootState> = {
+    health: (state: IPlayerState) => state.health
 };
 
-const getters: GetterTree<PlayerState, RootState> = {
-    health: (state: PlayerState) => {
-        return state.health;
+export const mutations: MutationTree<IPlayerState> = {
+    setHealth: (state: IPlayerState, health: number) => {
+        state.health = health;
+    },
+    updateHealth: (state: IPlayerState, amount: number) => {
+        state.health += amount;
     }
 };
 
-const mutations: MutationTree<PlayerState> = {
-    setHealth(state: PlayerState, health: number) {
-        state.health = health;
-    }   
-};
-
-const actions: ActionTree<PlayerState, RootState> = {
+export const actions: ActionTree<IPlayerState, IRootState> = {
     setHealth({ commit }, health: number) {
         commit('setHealth', health);
+    },
+    updateHealth({ commit }, amount: number) {
+        commit('updateHealth', amount);
     }
 };
 
-export const playerModule: Module<PlayerState, RootState> = {
+export const playerModule: Module<IPlayerState, IRootState> = {
     state,
     getters,
     mutations,
-    actions
+    actions,
+    namespaced: true
 };
 

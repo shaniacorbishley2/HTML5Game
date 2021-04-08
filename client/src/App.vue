@@ -1,16 +1,30 @@
-<template>
-  <Game />
+<template  id="app">
+
+   <Game/>
+
 </template>
 
 <script lang="ts">
+import { Component, Vue } from 'vue-property-decorator';
 import Game from './components/Game.vue';
-import Vue from 'vue';
-import Component from 'vue-class-component';
+
+
 
 @Component({
   components: { Game }
 })
 export default class App extends Vue {
+  
+
+  public test() {
+    
+   
+  }
+
+  public created() {
+    this.test();
+
+  }
   
 }
 </script>

@@ -1,10 +1,11 @@
+import { store } from '../../store';
 export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
 
     private moveVelocity: number = 60;
 
     private jumpVelocity: number = -150;
 
-    public playerId!: string;
+    public playerId: string = '';
 
     public playerHealth: number = 100;
 
@@ -57,6 +58,6 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
     }
 
     public playerHit() {
-        console.log('PLAYER HIT!!');
+        store.dispatch('playerModule/updateHealth', -10);
     }
 }

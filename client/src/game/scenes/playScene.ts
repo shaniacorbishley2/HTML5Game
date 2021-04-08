@@ -2,6 +2,7 @@ import { GameObjects, Scene } from 'phaser';
 import Controls from '../objects/controls';
 import MainPlayer from '../objects/mainPlayer';
 import { io, Socket } from 'socket.io-client';
+import Enermy from '../objects/enermy';
 
 export default class PlayScene extends Scene {
   constructor () {
@@ -20,11 +21,11 @@ export default class PlayScene extends Scene {
 
   private players: MainPlayer[] = [];
 
+  private enermies: Enermy[] = [];
+
   private collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
   private tilemapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
-
-  private enermies: Phaser.Types.Physics.Arcade.ImageWithDynamicBody[] = [];
 
   public create () {
 
@@ -36,7 +37,7 @@ export default class PlayScene extends Scene {
     this.socket.on('connect', () => {
 
     });
-    this.addEnermies();    
+    this.createEnermies();  
     
     this.createPlayer1();
   
@@ -71,11 +72,11 @@ export default class PlayScene extends Scene {
       }
 
       if (type === 'enermy') {
-        this.enermies.forEach((enermy) => {
+        this.enermies.forEach((enermy: Enermy) => {
           this.physics.add.collider(enermy, layer);
 
-          this.players.forEach((player) => {
-            this.physics.add.collider(enermy, player, player.playerHit);
+          this.players.forEach((player: MainPlayer) => {
+            this.physics.add.collider(enermy, player, this.enermyPlayerCollide.bind(this));
             enermy.setCollideWorldBounds(true);
           });
         });
@@ -114,6 +115,15 @@ export default class PlayScene extends Scene {
 
   }
 
+  private createEnermies() {
+    this.time.addEvent({
+      delay: 4000,
+      callback: this.addEnermies,
+      callbackScope: this,
+      loop: true
+    });
+  }
+
   // Logic to add another player to the scene
   private addPlayer(playerId: string) {
     
@@ -130,12 +140,34 @@ export default class PlayScene extends Scene {
     return player;
   }
 
+  private addEnermies() {
+      if (this.enermies.length < 5) {
+        const enermy = new Enermy(this, `${this.enermies.length}`);
+        
+        this.enermies.push(enermy);
+
+        this.add.existing(enermy);
+
+  
+        this.setCollisions('enermy');
+      }
+  }
+
   private removePlayer(playerId: string) {
     this.players = this.players.filter((player) => {
       if (player.playerId === playerId){
         player.destroy();
       }
       return player.playerId !== playerId;
+    });
+  }
+
+  private removeEnermy(currentEnermy: Enermy) {
+    this.enermies = this.enermies.filter((enermy) => {
+      if (enermy.enermyId === currentEnermy.enermyId){
+        enermy.destroy();
+      }
+      return enermy.enermyId !== currentEnermy.enermyId;
     });
   }
 
@@ -155,33 +187,13 @@ export default class PlayScene extends Scene {
     });
   }
 
-  private addBomb() {
-    if (this.enermies.length < 5) {
-      const bomb = this.physics.add.image(340, 0, 'bomb');
+  private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
+    const enermy = <Enermy>obj1;
+    const player = <MainPlayer>obj2;
 
-      bomb.setScale(0.5);
-
-      this.physics.world.enable(bomb);
-
-      bomb.setBounce(1);
-
-      bomb.setVelocity(50, 20);
-
-      this.enermies.push(bomb);
-
-      console.log(this.enermies.length);
-
-      this.setCollisions('enermy');
-    }
+    this.removeEnermy(enermy);
+    player.playerHit();
   }
-
-  private addEnermies() {
-    
-      this.time.addEvent({
-        delay: 4000,
-        callback: this.addBomb,
-        callbackScope: this,
-        loop: true
-      });
-    }
+  
+  
 }

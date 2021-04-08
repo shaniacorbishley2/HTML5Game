@@ -1,29 +1,29 @@
 <template>
     <div class="health-bar">
-        Health: {{health}}
+        Health: {{this.health}}
     </div>
 </template>
 
 <script lang="ts">
-import Vue from 'vue';
-import Component from 'vue-class-component';
+import { Component, Vue } from 'vue-property-decorator';
+import { namespace } from 'vuex-class';
 
-@Component
+const PlayerModule = namespace('playerModule');
+
+@Component({})
 export default class HealthBar extends Vue {
     public isDead: boolean = false;
 
     private maxHealth: number = 100;
 
-    // public get health() {
-    //     return this.$store.getters
-    // }
+    @PlayerModule.Getter public health;
 
     public created() {
-
+         console.log("health is" + this.health);
     }
 
     public updateHealth() {
-        // UPDATE PLAYER HEALTH WHEN EVENT EMITTED
+        
     }
 }
 </script>
