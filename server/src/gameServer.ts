@@ -1,6 +1,6 @@
 import express from 'express';
 import http from 'http';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 
 export default class GameServer {
   private app = express();
@@ -20,17 +20,21 @@ export default class GameServer {
       console.log(`App running on port ${3000}`);
     });
 
-    this.io.on('connection',  (socket) => {
-      this.playerConnected(socket.id);
+    this.io.on('connection',  (socket: Socket) => {
+      this.playerConnected(socket, socket.id);
 
       socket.on('disconnect', () => {
-        this.playerDisconnect(socket.id);
+        this.playerDisconnect(socket, socket.id);
       });
+
+      socket.on('playerMoved', (args: any[]) => {
+        console.log(args[0], args[1] );
+      })
     });
 
   }
 
-  private playerConnected(socketId: string) {
+  private playerConnected(socket: Socket, socketId: string) {
 
     // TODO: if there are 5 players already then the 6th player has to be a spectator
     // If the game is in process and a player leaves, 6th player cannot join until the game has ended
@@ -39,9 +43,12 @@ export default class GameServer {
     
     if (this.players.length >= 1) {
       // If there is already one player in the game, we need to call the logic to 'add another player' emit the event on created
-      this.players.forEach((player: string) => {
-        this.io.emit('addPlayer', [player]);
-      })
+     
+        // this.io.emit('addPlayer', [playerId]
+      
+       
+
+      console.log('there are now ' + this.players.length + ' players in the game');
     }
 
     // If there is only one player then continue as normal
@@ -50,13 +57,13 @@ export default class GameServer {
   }
 
 
-  private playerDisconnect(socketId: string) {
+  private playerDisconnect(socket: Socket, socketId: string) {
     console.log(`player ${socketId} disconnected`);
-    this.io.emit('removePlayer', [socketId]);
+    socket.emit('removePlayer', [socketId]);
     this.players = this.players.filter(player => player !== socketId);
   }
 
   private playerMoved() {
-    
+
   }
 }

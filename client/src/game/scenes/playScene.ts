@@ -7,13 +7,6 @@ import Enermy from '../objects/enermy';
 export default class PlayScene extends Scene {
   constructor () {
     super({ key: 'playScene' });
-
-    //SOCKET IO - this would change to a live
-    this.socket = io('10.106.100.35:3000');
-
-    this.socket.on('connect', () => {
-
-    });
   }
   private controls!: Controls;
 
@@ -36,20 +29,30 @@ export default class PlayScene extends Scene {
 
   public create () {
 
-    this.initMap();
+    //SOCKET IO - this would change to a live
+    this.socket = io('10.106.100.35:3000');
 
-    this.createEnermies();  
-    
-    this.createPlayer1();
+    this.socket.on('connect', () => {
+
+      console.log(this.socket.id);
+
+      this.initMap();
   
-    this.listeners();
+      this.createEnermies();  
+      
+      this.createPlayer1(this.socket.id);
+
+      this.createCollisions();
+    
+      this.listeners();
+    });
+
   }
   
   public update () {
-    this.controls.checkControls();
-    this.players.forEach((player) => {
-      player.setCollisionBox();
-    });
+    if (this.controls) {
+      this.controls.checkControls();
+    }
   }
 
   // Init all layers
@@ -57,32 +60,6 @@ export default class PlayScene extends Scene {
     return this.layers.map((value: string) => {
       return this.map.createLayer(value, this.tileset);
     });
-  }
-
-  // Add collisions on platform and allow collisions between player and platforms
-  private setCollisions(type: string) {
-    this.collisionLayers.forEach((layer: Phaser.Tilemaps.TilemapLayer) => {
-
-      this.map.setCollisionBetween(0, 74, true, false, layer);
-
-      if (type === 'player') {
-        this.players.forEach((player) => {
-          this.physics.add.collider(player, layer);
-          player.setCollideWorldBounds(true);
-        });
-      }
-
-      if (type === 'enermy') {
-        this.enermies.forEach((enermy: Enermy) => {
-          this.physics.add.collider(enermy, layer);
-
-          this.players.forEach((player: MainPlayer) => {
-            this.physics.add.collider(enermy, player, this.enermyPlayerCollide.bind(this));
-            enermy.setCollideWorldBounds(true);
-          });
-        });
-      }
-    });        
   }
 
   // Filter the layers to only contain needed collision layers
@@ -109,20 +86,37 @@ export default class PlayScene extends Scene {
     
   }
 
-  private createPlayer1() {
+  private createPlayer1(playerId: string) {
       // Create player
-      const player1 = this.addPlayer('userPlayer');
+      const player1 = this.addPlayer(playerId);
       this.addPlayerControls(player1);
-
   }
 
   private createEnermies() {
-    this.time.addEvent({
-      delay: 4000,
-      callback: this.addEnermies,
-      callbackScope: this,
-      loop: true
+    this.addEnermies();
+
+  }
+
+  private createCollisions() {
+    this.collisionLayers.forEach((layer) => {
+      this.map.setCollisionBetween(0, 74, true, false, layer);
+
+      this.players.forEach((player: MainPlayer) => {
+        this.physics.add.collider(player, layer);
+        player.setCollideWorldBounds(true);
+      });
+
+      this.enermies.forEach((enermy: Enermy) => {
+        this.physics.add.collider(enermy, layer);
+        enermy.setCollideWorldBounds(true);
+      });
     });
+
+    this.enermies.forEach((enermy: Enermy) => {
+      this.players.forEach((player: MainPlayer) => {
+        this.physics.add.collider(enermy, player, this.enermyPlayerCollide.bind(this));
+      });
+    })
   }
 
   // Logic to add another player to the scene
@@ -135,9 +129,6 @@ export default class PlayScene extends Scene {
     // Add player to the scene
     this.add.existing(player);
 
-    // Set collisions once player is created
-    this.setCollisions('player');
-
     return player;
   }
 
@@ -148,9 +139,6 @@ export default class PlayScene extends Scene {
         this.enermies.push(enermy);
 
         this.add.existing(enermy);
-
-  
-        this.setCollisions('enermy');
       }
   }
 
@@ -195,6 +183,4 @@ export default class PlayScene extends Scene {
     this.removeEnermy(enermy);
     player.playerHit();
   }
-  
-  
 }

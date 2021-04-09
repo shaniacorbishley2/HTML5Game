@@ -1,6 +1,6 @@
 import MainPlayer from './mainPlayer';
 import Keys from './interfaces/keys';
-import Movements from './enums/movements';
+import Movement from './enums/movement';
 import { io, Socket } from 'socket.io-client';
 
 export default class Controls {
@@ -15,7 +15,9 @@ export default class Controls {
 
     private socket!: Socket;
 
-    private currentDirection: Movements = Movements.None;
+    private previousDirection: Movement = Movement.None;
+
+    private currentDirection: Movement = Movement.None;
 
     public createKeys() {
 
@@ -30,60 +32,84 @@ export default class Controls {
     public checkControls() {
 
         if (this.keys.left.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-            this.currentDirection = Movements.SideJumpLeft;
-
+            this.currentDirection = Movement.SideJumpLeft;
+            
             this.player.sideJump(this.currentDirection);
 
-            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
+            this.emitMoved(this.player, this.currentDirection);
+
+            this.previousDirection = this.currentDirection;
+
         }
 
         if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-            this.currentDirection = Movements.SideJumpRight;
-
+            this.currentDirection = Movement.SideJumpRight;
+            
             this.player.sideJump(this.currentDirection);
 
-            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
+            this.emitMoved(this.player, this.currentDirection);
+
+            this.previousDirection = this.currentDirection;
         }
 
         if (this.keys.left.isDown) {
+            this.currentDirection = Movement.Left;
+
             this.player.movePlayerLeft();
 
-            this.currentDirection = Movements.Left;
+            this.emitMoved(this.player, this.currentDirection);
 
-            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
+            this.previousDirection = this.currentDirection;
         }
 
         else if (this.keys.right.isDown) {
+            this.currentDirection = Movement.Right;
 
             this.player.movePlayerRight();
 
-            this.currentDirection = Movements.Right;
+            this.emitMoved(this.player, this.currentDirection);
 
+            this.previousDirection = this.currentDirection;
 
-            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
         }
 
         else if (this.keys.up.isDown && this.player.body.blocked.down) {
-            this.player.startJump();
+            if (this.previousDirection === Movement.Left || this.previousDirection === Movement.SideJumpLeft || this.previousDirection === Movement.JumpLeft || this.previousDirection === Movement.IdleLeft) {
+                this.currentDirection = Movement.JumpLeft;
+            }
 
-            this.socket.emit('playerMoved', [this.player, this.currentDirection]);
+            if (this.previousDirection === Movement.Right || this.previousDirection === Movement.SideJumpRight || this.previousDirection === Movement.JumpRight || this.previousDirection === Movement.IdleRight) {
+                this.currentDirection = Movement.JumpRight;
+            }
+
+            this.player.startJump(this.currentDirection);
+
+            this.emitMoved(this.player, this.currentDirection);
+
+            this.previousDirection = this.currentDirection;
         }
 
         else {
-            var idleDirection = Movements.None;
 
-            if (this.currentDirection === Movements.Left || this.currentDirection === Movements.SideJumpLeft) {
-                idleDirection = Movements.IdleLeft
-                this.player.idle(idleDirection);
-                this.socket.emit('playerMoved', [this.player, idleDirection]);
+            if (this.previousDirection === Movement.Left || this.previousDirection === Movement.SideJumpLeft || this.previousDirection === Movement.JumpLeft || this.previousDirection === Movement.IdleLeft) {
+                this.currentDirection = Movement.IdleLeft
             }
 
-            else if (this.currentDirection === Movements.Right || this.currentDirection === Movements.SideJumpRight) {
-                idleDirection = Movements.IdleRight
-                this.player.idle(idleDirection);
-                this.socket.emit('playerMoved', [this.player, idleDirection]);
-                
+            else if (this.previousDirection === Movement.Right || this.previousDirection === Movement.SideJumpRight || this.previousDirection === Movement.JumpRight || this.previousDirection === Movement.IdleRight) {
+                this.currentDirection = Movement.IdleRight
             }
+
+            this.player.idle(this.currentDirection);
+
+            this.emitMoved(this.player, this.currentDirection);
+
+            this.previousDirection = this.currentDirection;
+        }
+    }
+
+    private emitMoved(player: MainPlayer, direction: Movement) {
+        if (this.currentDirection !== this.previousDirection) {
+            this.socket.emit('playerMoved', [player.playerId, direction]);
         }
     }
 }

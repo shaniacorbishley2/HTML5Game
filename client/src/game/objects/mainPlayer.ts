@@ -1,5 +1,5 @@
 import { store } from '../../store';
-import Movements from './enums/movements';
+import Movement from './enums/movement';
 export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
 
     private moveVelocity: number = 60;
@@ -15,6 +15,7 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
         this.playerId = playerId;
         scene.physics.world.enable(this);
         this.setGravity(0, 5);
+        this.setCollisionBox();
     }
 
     // Move player left 
@@ -30,27 +31,34 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
     }
 
     // Player not moving, set to idle state
-    public idle(direction: Movements) {
+    public idle(direction: Movement) {
         this.setVelocityX(0);
-        if (direction === Movements.IdleLeft) {
+        if (direction === Movement.IdleLeft) {
             this.anims.play('idle-l', true)
         }
-        else if (direction === Movements.IdleRight) {
+        else if (direction === Movement.IdleRight) {
             this.anims.play('idle-r', true);
         }
     }
 
     // Starts the jump 
-    public startJump() {
+    public startJump(direction: Movement) {
         this.setVelocityY(this.jumpVelocity);
-        this.anims.play('jump-l', true);
+
+        if (direction === Movement.JumpLeft) {
+            this.anims.play('jump-l', true);
+        }
+        if (direction === Movement.JumpRight) {
+            this.anims.play('jump-r', true);
+        }
+        
     }
 
     // Jump to the side
-    public sideJump(direction: Movements) {
+    public sideJump(direction: Movement) {
         this.setVelocityY(this.jumpVelocity);
-        this.setVelocityX(direction === Movements.SideJumpLeft ? -10 : 10);
-        direction === Movements.SideJumpLeft ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
+        this.setVelocityX(direction === Movement.SideJumpLeft ? -10 : 10);
+        direction === Movement.SideJumpLeft ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
     }
 
     // Ends players jump
