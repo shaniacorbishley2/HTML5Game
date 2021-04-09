@@ -1,24 +1,25 @@
-export default class Enermy extends Phaser.Physics.Arcade.Image {
+export default class Enermy extends Phaser.Physics.Arcade.Group {
 
     public enermyId: string = '';
 
-    constructor (scene: Phaser.Scene, enermyId: string) {
-        super(scene, 340, 0, 'bomb');
+    public config
+
+    constructor (world: Phaser.Physics.Arcade.World, scene: Phaser.Scene, enermyId: string) {
+        super(world, scene, {
+            key: 'bomb',
+            repeat: 5,
+            setXY: { x: 300, y: 0, stepX: 20 },
+            bounceX: 1,
+            bounceY: 1,
+            velocityX: 50,
+            velocityY: 20,
+            collideWorldBounds: true,
+            setScale: {
+                x: 0.5,
+                y: 0.5
+            },
+        });
+
         this.enermyId = enermyId;
-        this.initEnermy();
-    }
-
-    private initEnermy() {
-
-        this.setScale(0.5);
-
-        this.scene.physics.world.enable(this);
-
-        this.setGravity(0, 5);
-
-        this.setBounce(1);
-
-        this.setVelocity(50, 20);
-
     }
 }

@@ -108,7 +108,6 @@ export default class PlayScene extends Scene {
 
       this.enermies.forEach((enermy: Enermy) => {
         this.physics.add.collider(enermy, layer);
-        enermy.setCollideWorldBounds(true);
       });
     });
 
@@ -134,11 +133,9 @@ export default class PlayScene extends Scene {
 
   private addEnermies() {
       if (this.enermies.length < 5) {
-        const enermy = new Enermy(this, `${this.enermies.length}`);
+        const enermy = new Enermy(this.physics.world, this, `${this.enermies.length}`);
         
         this.enermies.push(enermy);
-
-        this.add.existing(enermy);
       }
   }
 
@@ -177,10 +174,10 @@ export default class PlayScene extends Scene {
   }
 
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
-    const enermy = <Enermy>obj1;
-    const player = <MainPlayer>obj2;
+    const player = <MainPlayer>obj1;
+    const enermy = <Enermy>obj2;
 
-    this.removeEnermy(enermy);
-    player.playerHit();
+    console.log(player);
+    console.log(enermy);
   }
 }
