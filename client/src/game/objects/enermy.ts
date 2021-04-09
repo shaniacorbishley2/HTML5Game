@@ -1,13 +1,11 @@
 export default class Enermy extends Phaser.Physics.Arcade.Group {
 
-    public enermyId: string = '';
-
     public config
 
-    constructor (world: Phaser.Physics.Arcade.World, scene: Phaser.Scene, enermyId: string) {
+    constructor (world: Phaser.Physics.Arcade.World, scene: Phaser.Scene, amount: number) {
         super(world, scene, {
             key: 'bomb',
-            repeat: 5,
+            repeat: amount,
             setXY: { x: 300, y: 0, stepX: 20 },
             bounceX: 1,
             bounceY: 1,
@@ -19,7 +17,5 @@ export default class Enermy extends Phaser.Physics.Arcade.Group {
                 y: 0.5
             },
         });
-
-        this.enermyId = enermyId;
     }
 }

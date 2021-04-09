@@ -1,7 +1,7 @@
 import MainPlayer from './mainPlayer';
 import Keys from './interfaces/keys';
 import Movement from './enums/movement';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 
 export default class Controls {
 

@@ -1,4 +1,4 @@
-import { GameObjects, Scene } from 'phaser';
+import { Scene } from 'phaser';
 import Controls from '../objects/controls';
 import MainPlayer from '../objects/mainPlayer';
 import { io, Socket } from 'socket.io-client';
@@ -21,7 +21,7 @@ export default class PlayScene extends Scene {
 
   private players: MainPlayer[] = [];
 
-  private enermies: Enermy[] = [];
+  private enermies!: Enermy;
 
   private collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
@@ -106,15 +106,11 @@ export default class PlayScene extends Scene {
         player.setCollideWorldBounds(true);
       });
 
-      this.enermies.forEach((enermy: Enermy) => {
-        this.physics.add.collider(enermy, layer);
-      });
+      this.physics.add.collider(this.enermies, layer)
     });
 
-    this.enermies.forEach((enermy: Enermy) => {
-      this.players.forEach((player: MainPlayer) => {
-        this.physics.add.collider(enermy, player, this.enermyPlayerCollide.bind(this));
-      });
+    this.players.forEach((player: MainPlayer) => {
+      this.physics.add.collider(player, this.enermies, this.enermyPlayerCollide.bind(this));
     })
   }
 
@@ -132,11 +128,7 @@ export default class PlayScene extends Scene {
   }
 
   private addEnermies() {
-      if (this.enermies.length < 5) {
-        const enermy = new Enermy(this.physics.world, this, `${this.enermies.length}`);
-        
-        this.enermies.push(enermy);
-      }
+      this.enermies = new Enermy(this.physics.world, this, 5);
   }
 
   private removePlayer(playerId: string) {
@@ -148,13 +140,8 @@ export default class PlayScene extends Scene {
     });
   }
 
-  private removeEnermy(currentEnermy: Enermy) {
-    this.enermies = this.enermies.filter((enermy) => {
-      if (enermy.enermyId === currentEnermy.enermyId){
-        enermy.destroy();
-      }
-      return enermy.enermyId !== currentEnermy.enermyId;
-    });
+  private removeEnermy(enermy: Enermy) {
+    enermy.destroy();
   }
 
   private addPlayerControls(player: MainPlayer) {
@@ -176,8 +163,8 @@ export default class PlayScene extends Scene {
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
     const player = <MainPlayer>obj1;
     const enermy = <Enermy>obj2;
-
-    console.log(player);
-    console.log(enermy);
+    
+    player.playerHit();
+    this.removeEnermy(enermy);
   }
 }
