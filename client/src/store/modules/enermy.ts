@@ -22,7 +22,7 @@ export const actions: ActionTree<IEnermyState, IRootState> = {
     submitEnermyObjects({ commit }, object: GameObjectConfig) {
         let enermyObjects: Enermy[] = [];
 
-        for (let i = 0; i < object.amount; i++) {
+        for (let i = 0; i <= object.amount; i++) {
             enermyObjects.push(new Enermy(object.scene, object.texture));
         }
 

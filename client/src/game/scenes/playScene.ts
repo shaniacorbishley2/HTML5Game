@@ -101,7 +101,7 @@ export default class PlayScene extends Scene {
   }
 
   private createEnermies() {
-    const gameObjectConfig: GameObjectConfig = { amount: 5, scene: this, x: 300, y: 0, texture: 'bomb' }
+    const gameObjectConfig: GameObjectConfig = { amount: 5, scene: this, texture: 'bomb' }
 
     const enermyConfig: Phaser.Types.GameObjects.Group.GroupCreateConfig = store.getters['enermyModule/config'];
 
