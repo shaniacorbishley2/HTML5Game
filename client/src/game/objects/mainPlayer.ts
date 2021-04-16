@@ -1,5 +1,6 @@
 import { store } from '../../store';
 import Movement from './enums/movement';
+import Phaser from 'phaser';
 export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
 
     private moveVelocity: number = 60;
@@ -13,9 +14,10 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
     constructor (scene: Phaser.Scene, playerId: string) {
         super(scene, 340, 0, 'bear');
         this.playerId = playerId;
-        scene.physics.world.enable(this);
+        this.scene.physics.world.enable(this);
         this.setGravity(0, 5);
         this.setCollisionBox();
+        this.setCollideWorldBounds(true);
     }
 
     // Move player left 

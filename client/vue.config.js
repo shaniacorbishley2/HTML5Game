@@ -33,6 +33,6 @@ module.exports = {
     open: true,
     hot: false,
     port: 8080,
-    host: '10.106.100.35'
+    host: '10.106.101.12'
   }
 };

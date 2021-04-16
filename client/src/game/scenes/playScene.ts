@@ -2,7 +2,10 @@ import { Scene } from 'phaser';
 import Controls from '../objects/controls';
 import MainPlayer from '../objects/mainPlayer';
 import { io, Socket } from 'socket.io-client';
+import EnermyGroup from '../objects/enermyGroup';
 import Enermy from '../objects/enermy';
+import { store } from '../../store';
+import GameObjectConfig from './../objects/interfaces/gameObjectConfig';
 
 export default class PlayScene extends Scene {
   constructor () {
@@ -21,16 +24,16 @@ export default class PlayScene extends Scene {
 
   private players: MainPlayer[] = [];
 
-  private enermies!: Enermy;
-
   private collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
   private tilemapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
+  private enermyGroup!: EnermyGroup;
+
   public create () {
 
     //SOCKET IO - this would change to a live
-    this.socket = io('10.106.100.35:3000');
+    this.socket = io('10.106.101.12:3000');
 
     this.socket.on('connect', () => {
 
@@ -38,7 +41,7 @@ export default class PlayScene extends Scene {
 
       this.initMap();
   
-      this.createEnermies();  
+      this.createEnermies();
       
       this.createPlayer1(this.socket.id);
 
@@ -53,6 +56,9 @@ export default class PlayScene extends Scene {
     if (this.controls) {
       this.controls.checkControls();
     }
+
+    // if (this.enermies && this.enermies.children.size < 5) {
+    // }
   }
 
   // Init all layers
@@ -72,6 +78,8 @@ export default class PlayScene extends Scene {
   private initMap() {
 
     this.physics.world.setBounds( 0, 0, 640, 320);
+
+    this.physics.world.setBoundsCollision(true, true, true, true);
 
     this.map = this.make.tilemap({ key: 'tilemap' });
 
@@ -93,8 +101,17 @@ export default class PlayScene extends Scene {
   }
 
   private createEnermies() {
-    this.addEnermies();
+    const gameObjectConfig: GameObjectConfig = { amount: 5, scene: this, x: 300, y: 0, texture: 'bomb' }
 
+    const enermyConfig: Phaser.Types.GameObjects.Group.GroupCreateConfig = store.getters['enermyModule/config'];
+
+    store.dispatch('enermyModule/submitEnermyObjects', gameObjectConfig);
+
+    const enermyObjects: Enermy[] = store.getters['enermyModule/enermyObjects'];
+
+    this.enermyGroup= new EnermyGroup(this.physics.world, this, enermyConfig);
+
+    this.enermyGroup.addEnermies(enermyObjects); 
   }
 
   private createCollisions() {
@@ -103,14 +120,13 @@ export default class PlayScene extends Scene {
 
       this.players.forEach((player: MainPlayer) => {
         this.physics.add.collider(player, layer);
-        player.setCollideWorldBounds(true);
       });
 
-      this.physics.add.collider(this.enermies, layer)
+      this.physics.add.collider(this.enermyGroup, layer)
     });
 
     this.players.forEach((player: MainPlayer) => {
-      this.physics.add.collider(player, this.enermies, this.enermyPlayerCollide.bind(this));
+      this.physics.add.collider(player, this.enermyGroup, this.enermyPlayerCollide.bind(this));
     })
   }
 
@@ -125,10 +141,6 @@ export default class PlayScene extends Scene {
     this.add.existing(player);
 
     return player;
-  }
-
-  private addEnermies() {
-      this.enermies = new Enermy(this.physics.world, this, 5);
   }
 
   private removePlayer(playerId: string) {
@@ -163,7 +175,7 @@ export default class PlayScene extends Scene {
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
     const player = <MainPlayer>obj1;
     const enermy = <Enermy>obj2;
-    
+
     player.playerHit();
     this.removeEnermy(enermy);
   }
