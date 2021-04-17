@@ -22,6 +22,8 @@ export default class PlayScene extends Scene {
 
   private socket!: Socket;
 
+  private socketIds: string[] = [];                   
+
   private players: MainPlayer[] = [];
 
   private collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
@@ -29,6 +31,8 @@ export default class PlayScene extends Scene {
   private tilemapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
   private enermyGroup!: EnermyGroup;
+
+  private randomDataGenerator: Phaser.Math.RandomDataGenerator = new Phaser.Math.RandomDataGenerator();
 
   public create () {
 
@@ -57,8 +61,6 @@ export default class PlayScene extends Scene {
       this.controls.checkControls();
     }
 
-    // if (this.enermies && this.enermies.children.size < 5) {
-    // }
   }
 
   // Init all layers
@@ -96,8 +98,12 @@ export default class PlayScene extends Scene {
 
   private createPlayer1(playerId: string) {
       // Create player
-      const player1 = this.addPlayer(playerId);
-      this.addPlayerControls(player1);
+      const player1: MainPlayer = this.addPlayer(playerId);
+      this.socketIds.push(playerId);
+
+      if (player1) {
+        this.addPlayerControls(player1);
+      }
   }
 
   private createEnermies() {
@@ -109,7 +115,7 @@ export default class PlayScene extends Scene {
 
     const enermyObjects: Enermy[] = store.getters['enermyModule/enermyObjects'];
 
-    this.enermyGroup= new EnermyGroup(this.physics.world, this, enermyConfig);
+    this.enermyGroup = new EnermyGroup(this.physics.world, this, enermyConfig, this.randomDataGenerator);
 
     this.enermyGroup.addEnermies(enermyObjects); 
   }
@@ -130,26 +136,58 @@ export default class PlayScene extends Scene {
     })
   }
 
-  // Logic to add another player to the scene
-  private addPlayer(playerId: string) {
-    
-    const player = new MainPlayer(this, playerId); 
-    // add to the players array
-    this.players.push(player);
-  
-    // Add player to the scene
-    this.add.existing(player);
+  private playerConnected(playerIds: string[]) {
+    if (playerIds.length !== this.socketIds.length) {
 
-    return player;
+      playerIds.forEach((element) =>  {
+        if (!this.socketIds.includes(element)) {
+
+          this.socketIds.push(element);
+          this.addPlayer(element);
+          this.createCollisions();
+        }
+      })
+    }
+    
+  }
+
+  // Logic to add another player to the scene
+  private addPlayer(playerId: string): MainPlayer {
+
+      const player = new MainPlayer(this, playerId); 
+      // add to the players array
+      this.players.push(player);
+    
+      // Add player to the scene
+      this.add.existing(player);
+
+      return player
+  }
+
+  private playerDisconnected(playerIds: string[]) {
+    console.log('test');
+    if (playerIds.length !== this.socketIds.length) {
+
+      this.socketIds.forEach((element) =>  {
+        if (!playerIds.includes(element)) {
+
+         this.socketIds.filter(id => id !== element);
+         this.removePlayer(element);
+        }
+      });
+    }
   }
 
   private removePlayer(playerId: string) {
+    console.log(this.players);
     this.players = this.players.filter((player) => {
-      if (player.playerId === playerId){
+      if (player.playerId === playerId) {
+
         player.destroy();
       }
       return player.playerId !== playerId;
     });
+    console.log(this.players);
   }
 
   private removeEnermy(enermy: Enermy) {
@@ -163,12 +201,16 @@ export default class PlayScene extends Scene {
   }
 
   private listeners() {
-    this.socket.on('addPlayer', (playerId: string[]) => {
-      this.addPlayer(playerId[0]);
+    this.socket.on('playerConnected', (playerIds: string[]) => {
+      this.playerConnected(playerIds);
     });
 
-    this.socket.on ('removePlayer', (playerId: string[]) => {
-      this.removePlayer(playerId[0]);
+    this.socket.on('playerDisconnected', (playerIds: string[]) => {
+      this.playerDisconnected(playerIds);
+    });
+
+    this.socket.on('playerMoved', () => {
+
     });
   }
 

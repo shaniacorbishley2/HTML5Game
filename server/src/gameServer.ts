@@ -1,13 +1,14 @@
 import express from 'express';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
+import Movement from './enums/movement';
 
 export default class GameServer {
   private app = express();
 
   private server: http.Server = http.createServer(this.app);
 
-  private players: string[] = [];
+  private socketIds: string[] = [];
 
   private io: Server = new Server(this.server, {
     cors: {
@@ -21,46 +22,76 @@ export default class GameServer {
     });
 
     this.io.on('connection',  (socket: Socket) => {
-      this.playerConnected(socket, socket.id);
+      this.playerConnected(socket.id);
 
       socket.on('disconnect', () => {
-        this.playerDisconnect(socket, socket.id);
+        this.playerDisconnect(socket.id);
       });
 
       socket.on('playerMoved', (args: any[]) => {
-        console.log(args[0], args[1] );
+        const socketId = <string> args[0];
+        const movement = <Movement> args[1];
+
+        this.checkPlayerMovement(socketId, movement);
       })
     });
 
   }
 
-  private playerConnected(socket: Socket, socketId: string) {
+  private checkPlayerMovement(socketId: string, movement: Movement) {
+    switch(movement) {
+      case Movement.IdleLeft : {
+        this.io.emit('idleLeft', [socketId]);
+      }
+      case Movement.IdleRight : {
+        this.io.emit('idleRight', [socketId]);
+      }
+      case Movement.JumpLeft : {
+        this.io.emit('jumpLeft', [socketId]);
+      }
+      case Movement.JumpRight : {
+        this.io.emit('jumpRight', [socketId]);
+      }
+      case Movement.Left : {
+        this.io.emit('left', [socketId]);
+      }
+      case Movement.Right : {
+        this.io.emit('right', [socketId]);
+      }
+      case Movement.SideJumpLeft : {
+        this.io.emit('sideJumpLeft', [socketId]);
+      }
+      case Movement.SideJumpRight : {
+        this.io.emit('sideJumpRight', [socketId]);
+      }
+    }
+
+  }
+
+  private playerConnected(socketId: string) {
 
     // TODO: if there are 5 players already then the 6th player has to be a spectator
     // If the game is in process and a player leaves, 6th player cannot join until the game has ended
 
     // Else let the player join
+    // If there is only one player then continue as normal
     
-    if (this.players.length >= 1) {
+    this.socketIds.push(socketId);
+    
       // If there is already one player in the game, we need to call the logic to 'add another player' emit the event on created
      
-        // this.io.emit('addPlayer', [playerId]
-      
-       
-
-      console.log('there are now ' + this.players.length + ' players in the game');
-    }
-
-    // If there is only one player then continue as normal
-    this.players.push(socketId);
+    this.io.emit('playerConnected', this.socketIds);
+    
     console.log(`player ${socketId} connected`);
+    console.log(`there are ${this.socketIds.length} socketIds`);
   }
 
-
-  private playerDisconnect(socket: Socket, socketId: string) {
+  private playerDisconnect(socketId: string) {
     console.log(`player ${socketId} disconnected`);
-    socket.emit('removePlayer', [socketId]);
-    this.players = this.players.filter(player => player !== socketId);
+
+    this.socketIds = this.socketIds.filter(player => player !== socketId);
+
+    this.io.emit('playerDisconnected', this.socketIds);
   }
 
   private playerMoved() {

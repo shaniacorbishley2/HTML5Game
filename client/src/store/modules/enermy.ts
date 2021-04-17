@@ -23,7 +23,7 @@ export const actions: ActionTree<IEnermyState, IRootState> = {
         let enermyObjects: Enermy[] = [];
 
         for (let i = 0; i <= object.amount; i++) {
-            enermyObjects.push(new Enermy(object.scene, object.texture));
+            enermyObjects.push(new Enermy(object.scene, object.texture, Phaser.Math.Between(100, 340)));
         }
 
         commit('submitEnermyObjects', enermyObjects);
