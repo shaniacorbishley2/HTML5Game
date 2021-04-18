@@ -1,5 +1,6 @@
 interface PlayerCollision {
     scene: Phaser.Scene,
-    obj: any
+    colliderObject: Phaser.Tilemaps.TilemapLayer | EnermyGroup,
+    callback?: ArcadePhysicsCallback
 }
 export default PlayerCollision;

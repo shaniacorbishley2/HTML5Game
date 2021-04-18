@@ -47,7 +47,10 @@ export const mutations: MutationTree<IPlayerState> = {
     },
     playerCollisions: (state: IPlayerState, playerCollision: PlayerCollision) => {
         state.players.forEach((player: Player) => {
-            playerCollision.scene.physics.add.collider(player, playerCollision.obj);
+            if (playerCollision.callback) {
+                playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject, playerCollision.callback);
+            }
+            playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject);
         });
     }
 };

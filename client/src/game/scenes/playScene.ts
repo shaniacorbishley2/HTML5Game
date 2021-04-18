@@ -117,10 +117,8 @@ export default class PlayScene extends Scene {
   }
 
   private createCollisions() {
-    const players: Player[] = store.getters['playerModule/players'];
-
     this.collisionLayers.forEach((layer) => {
-      const playerCollisions: PlayerCollision = {scene: this, obj: layer};
+      const playerCollisions: PlayerCollision = {scene: this, colliderObject: layer};
 
       this.map.setCollisionBetween(0, 74, true, false, layer);
 
@@ -129,9 +127,8 @@ export default class PlayScene extends Scene {
       this.physics.add.collider(this.enermyGroup, layer)
     });
 
-    players.forEach((player: Player) => {
-      this.physics.add.collider(player, this.enermyGroup, this.enermyPlayerCollide.bind(this));
-    })
+    const playerCollisions: PlayerCollision = {scene: this, colliderObject: this.enermyGroup, callback: this.enermyPlayerCollide.bind(this) };
+    store.dispatch('playerModule/submitPlayerCollisions', playerCollisions);
   }
 
   private playerConnected(serverPlayerIds: string[]) {
