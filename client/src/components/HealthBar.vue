@@ -1,6 +1,6 @@
 <template>
     <div class="health-bar">
-        Health: {{this.health}}
+        Health: {{this.mainPlayerHealth}}
     </div>
 </template>
 
@@ -16,7 +16,9 @@ export default class HealthBar extends Vue {
 
     private maxHealth: number = 100;
 
-    @PlayerModule.Getter public health;
-    
+    @PlayerModule.Getter public mainPlayerId;
+
+    @PlayerModule.Getter public mainPlayerHealth;
+
 }
 </script>

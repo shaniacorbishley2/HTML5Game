@@ -1,17 +1,19 @@
 import { Scene } from 'phaser';
-import Controls from '../objects/controls';
-import MainPlayer from '../objects/mainPlayer';
+import Player from '../objects/player/player';
 import { io, Socket } from 'socket.io-client';
-import EnermyGroup from '../objects/enermyGroup';
-import Enermy from '../objects/enermy';
+import EnermyGroup from '../objects/enermy/enermyGroup';
+import Enermy from '../objects/enermy/enermy';
 import { store } from '../../store';
+import Movement from '../objects/enums/movement';
 import GameObjectConfig from './../objects/interfaces/gameObjectConfig';
+import PlayerMovement from '../objects/interfaces/playerMovement';
+import MainPlayer from '../objects/player/mainPlayer';
+import PlayerCollision from '../objects/interfaces/playerCollision';
 
 export default class PlayScene extends Scene {
   constructor () {
     super({ key: 'playScene' });
   }
-  private controls!: Controls;
 
   private layers: string[] = ['Sky', 'Details', 'Platform-1', 'Platform-2', 'Platform-3', 
                                     'Platform-4', 'Platform-5', 'Platform-6', 'Blocks-1', 'Blocks-2','Blocks-3', 'Blocks-4', 'Blocks-5', 'Blocks-6', 'Blocks-7', 'Blocks-8', 'Bridge'];
@@ -22,17 +24,18 @@ export default class PlayScene extends Scene {
 
   private socket!: Socket;
 
-  private socketIds: string[] = [];                   
-
-  private players: MainPlayer[] = [];
-
   private collisionLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
   private tilemapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
   private enermyGroup!: EnermyGroup;
 
-  private randomDataGenerator: Phaser.Math.RandomDataGenerator = new Phaser.Math.RandomDataGenerator();
+  private buttonPressed: boolean = false;
+
+  private randomDataGenerator: Phaser.Math.RandomDataGenerator = new Phaser.Math.RandomDataGenerator('shania');
+
+  private mainPlayer!: MainPlayer;
+
 
   public create () {
 
@@ -44,10 +47,10 @@ export default class PlayScene extends Scene {
       console.log(this.socket.id);
 
       this.initMap();
+
+      this.mainPlayer = new MainPlayer(this, this.socket);
   
       this.createEnermies();
-      
-      this.createPlayer1(this.socket.id);
 
       this.createCollisions();
     
@@ -57,10 +60,13 @@ export default class PlayScene extends Scene {
   }
   
   public update () {
-    if (this.controls) {
-      this.controls.checkControls();
+    if (this.mainPlayer && this.mainPlayer.controls) {
+      this.mainPlayer.controls.checkControls();
     }
 
+    if (this.buttonPressed) {
+
+    }
   }
 
   // Init all layers
@@ -96,16 +102,6 @@ export default class PlayScene extends Scene {
     
   }
 
-  private createPlayer1(playerId: string) {
-      // Create player
-      const player1: MainPlayer = this.addPlayer(playerId);
-      this.socketIds.push(playerId);
-
-      if (player1) {
-        this.addPlayerControls(player1);
-      }
-  }
-
   private createEnermies() {
     const gameObjectConfig: GameObjectConfig = { amount: 5, scene: this, texture: 'bomb' }
 
@@ -121,83 +117,69 @@ export default class PlayScene extends Scene {
   }
 
   private createCollisions() {
+    const players: Player[] = store.getters['playerModule/players'];
+
     this.collisionLayers.forEach((layer) => {
+      const playerCollisions: PlayerCollision = {scene: this, obj: layer};
+
       this.map.setCollisionBetween(0, 74, true, false, layer);
 
-      this.players.forEach((player: MainPlayer) => {
-        this.physics.add.collider(player, layer);
-      });
+      store.dispatch('playerModule/submitPlayerCollisions', playerCollisions);
 
       this.physics.add.collider(this.enermyGroup, layer)
     });
 
-    this.players.forEach((player: MainPlayer) => {
+    players.forEach((player: Player) => {
       this.physics.add.collider(player, this.enermyGroup, this.enermyPlayerCollide.bind(this));
     })
   }
 
-  private playerConnected(playerIds: string[]) {
-    if (playerIds.length !== this.socketIds.length) {
+  private playerConnected(serverPlayerIds: string[]) {
+    const playerIds: string[] = store.getters['playerModule/playerIds'];
+    if (serverPlayerIds.length !== playerIds.length) {
 
-      playerIds.forEach((element) =>  {
-        if (!this.socketIds.includes(element)) {
+      serverPlayerIds.forEach((element) =>  {
+        if (!playerIds.includes(element)) {
 
-          this.socketIds.push(element);
           this.addPlayer(element);
           this.createCollisions();
         }
-      })
+      });
     }
     
   }
 
   // Logic to add another player to the scene
-  private addPlayer(playerId: string): MainPlayer {
+  private addPlayer(playerId: string): Player {
 
-      const player = new MainPlayer(this, playerId); 
+      const player = new Player(this, playerId); 
       // add to the players array
-      this.players.push(player);
+      store.dispatch('playerModule/submitAddPlayer',player);
     
       // Add player to the scene
       this.add.existing(player);
 
-      return player
+      return player;
   }
 
-  private playerDisconnected(playerIds: string[]) {
-    console.log('test');
-    if (playerIds.length !== this.socketIds.length) {
+  private playerDisconnected(serverPlayerIds: string[]) {
+    const playerIds: string[] = store.getters['playerModule/playerIds'];
+    if (serverPlayerIds.length !== playerIds.length) {
 
-      this.socketIds.forEach((element) =>  {
-        if (!playerIds.includes(element)) {
+      playerIds.forEach((id) =>  {
+        if (!playerIds.includes(id)) {
 
-         this.socketIds.filter(id => id !== element);
-         this.removePlayer(element);
+         playerIds.filter(id => id !== id);
+         store.dispatch('playerModule/removePlayer', id);
         }
       });
     }
   }
 
-  private removePlayer(playerId: string) {
-    console.log(this.players);
-    this.players = this.players.filter((player) => {
-      if (player.playerId === playerId) {
 
-        player.destroy();
-      }
-      return player.playerId !== playerId;
-    });
-    console.log(this.players);
-  }
 
   private removeEnermy(enermy: Enermy) {
     enermy.destroy();
-  }
-
-  private addPlayerControls(player: MainPlayer) {
-    // Create controls
-    this.controls = new Controls(player, this.socket);
-    this.controls.createKeys();
   }
 
   private listeners() {
@@ -209,13 +191,65 @@ export default class PlayScene extends Scene {
       this.playerDisconnected(playerIds);
     });
 
-    this.socket.on('playerMoved', () => {
+    
+    this.socket.on('playerKeyPressed', (playerMovement: PlayerMovement[]) => {
+      this.buttonPressed = true;
+      const players: Player[] = store.getters['playerModule/players'];
 
+      const player: Player | undefined = players.find((player: Player, index) => {
+        return player.playerId === playerMovement[0].playerId && index !== 0
+      });
+      
+      this.additionalPlayerMovement(player, playerMovement[0].currentMovement);
+    });
+
+    this.socket.on('playerKeyReleased', (playerMovement: PlayerMovement[]) => {
     });
   }
 
+  private additionalPlayerMovement(player: Player | undefined, movement: Movement) {
+    if (player) {
+        
+        switch(movement) {
+          
+          case Movement.IdleLeft:
+            player.idle(movement);
+            break;
+
+          case Movement.IdleRight:
+            player.idle(movement);
+            break;
+
+          case Movement.JumpLeft:
+            player.startJump(movement);
+            break;
+
+          case Movement.JumpRight: 
+            player.startJump(movement);
+            break;
+
+          case Movement.Left: 
+            player.movePlayerLeft();
+            break;
+        
+          case Movement.Right: 
+            player.movePlayerRight();
+            break;
+
+          case Movement.SideJumpLeft:
+            player.sideJump(movement);
+            break;
+
+          case Movement.SideJumpRight: 
+            player.sideJump(movement);
+            break;
+        }
+    }
+  }
+
+
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
-    const player = <MainPlayer>obj1;
+    const player = <Player>obj1;
     const enermy = <Enermy>obj2;
 
     player.playerHit();

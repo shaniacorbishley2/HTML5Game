@@ -1,15 +1,16 @@
-import { store } from '../../store';
-import Movement from './enums/movement';
+import { store } from '../../../store';
+import Movement from './../enums/movement';
 import Phaser from 'phaser';
-export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
-
-    private moveVelocity: number = 60;
-
-    private jumpVelocity: number = -150;
+import PlayerHealth from './../interfaces/playerHealth';
+export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     public playerId: string = '';
 
     public playerHealth: number = 100;
+
+    private moveVelocity: number = 60;
+
+    private jumpVelocity: number = -150;
 
     constructor (scene: Phaser.Scene, playerId: string) {
         super(scene, 340, 0, 'bear');
@@ -63,17 +64,16 @@ export default class MainPlayer extends Phaser.Physics.Arcade.Sprite {
         direction === Movement.SideJumpLeft ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
     }
 
-    // Ends players jump
-    public endJump() {
-        this.setVelocityY(0);
-    }
-
     // Sets hit box for the player to be exact pixel height
     public setCollisionBox() {
         this.body.setSize(16, 30, true);
     }
 
     public playerHit() {
-        store.dispatch('playerModule/updateHealth', -10);
+        const playerHealth: PlayerHealth = {
+            playerId: this.playerId,
+            health: -10
+        }
+        store.dispatch('playerModule/updateHealth', playerHealth);
     }
 }

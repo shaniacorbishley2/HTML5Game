@@ -3,7 +3,7 @@ import  IRootState  from '../states/interfaces';
 import IEnermyState from '../states/interfaces/enermyState';
 import EnermyState from '../states/enermyState';
 import GameObjectConfig from '@/game/objects/interfaces/gameObjectConfig';
-import Enermy from '@/game/objects/enermy';
+import Enermy from '@/game/objects/enermy/enermy';
 
 export const state: IEnermyState = new EnermyState();
 

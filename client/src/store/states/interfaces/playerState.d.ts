@@ -1,5 +1,8 @@
+import Player from "@/game/objects/player";
+
 interface IPlayerState {
-    health: number;
+    players: Player[];
+    mainPlayerId: string
 
 };
 

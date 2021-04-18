@@ -1,4 +1,4 @@
-import Enermy from '@/game/objects/enermy';
+import Enermy from "../../game/objects/enermy/enermy";
 import IEnermyState from './interfaces/enermyState.d';
 
 export default class EnermyState implements IEnermyState {

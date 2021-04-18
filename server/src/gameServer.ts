@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
-import Movement from './enums/movement';
+import PlayerMovement from './interfaces/playerMovement';
 
 export default class GameServer {
   private app = express();
@@ -28,43 +28,17 @@ export default class GameServer {
         this.playerDisconnect(socket.id);
       });
 
-      socket.on('playerMoved', (args: any[]) => {
-        const socketId = <string> args[0];
-        const movement = <Movement> args[1];
+      socket.on('playerKeyPressed', (args: any[]) => {
+        const playerMovement = <PlayerMovement> args[0];
 
-        this.checkPlayerMovement(socketId, movement);
-      })
+        this.io.emit('playerKeyPressed', [playerMovement]);
+        console.log(playerMovement.playerId, playerMovement.previousMovement, playerMovement.currentMovement);
+      });
+
+      socket.on('playerKeyReleased', () => {
+ 
+      });
     });
-
-  }
-
-  private checkPlayerMovement(socketId: string, movement: Movement) {
-    switch(movement) {
-      case Movement.IdleLeft : {
-        this.io.emit('idleLeft', [socketId]);
-      }
-      case Movement.IdleRight : {
-        this.io.emit('idleRight', [socketId]);
-      }
-      case Movement.JumpLeft : {
-        this.io.emit('jumpLeft', [socketId]);
-      }
-      case Movement.JumpRight : {
-        this.io.emit('jumpRight', [socketId]);
-      }
-      case Movement.Left : {
-        this.io.emit('left', [socketId]);
-      }
-      case Movement.Right : {
-        this.io.emit('right', [socketId]);
-      }
-      case Movement.SideJumpLeft : {
-        this.io.emit('sideJumpLeft', [socketId]);
-      }
-      case Movement.SideJumpRight : {
-        this.io.emit('sideJumpRight', [socketId]);
-      }
-    }
 
   }
 
@@ -94,7 +68,4 @@ export default class GameServer {
     this.io.emit('playerDisconnected', this.socketIds);
   }
 
-  private playerMoved() {
-
-  }
 }

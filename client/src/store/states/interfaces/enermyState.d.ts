@@ -1,4 +1,4 @@
-import Enermy from "@/game/objects/enermy";
+import Enermy from "../../../game/objects/enermy/enermy";
 
 interface IEnermyState {
     config:  Phaser.Types.Physics.Arcade.PhysicsGroupConfig;
