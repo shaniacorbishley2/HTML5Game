@@ -32,11 +32,7 @@ export default class GameServer {
         const playerMovement = <PlayerMovement> args[0];
 
         this.io.emit('playerKeyPressed', [playerMovement]);
-        console.log(playerMovement.playerId, playerMovement.previousMovement, playerMovement.currentMovement);
-      });
-
-      socket.on('playerKeyReleased', () => {
- 
+        console.log(playerMovement.playerId,  playerMovement.x, playerMovement.y);
       });
     });
 

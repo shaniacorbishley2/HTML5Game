@@ -43,7 +43,7 @@ export default class Controls {
 
         }
 
-        if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
+        else if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
             this.currentMovement = Movement.SideJumpRight;
             
             this.player.sideJump(this.currentMovement);
@@ -52,7 +52,7 @@ export default class Controls {
 
         }
 
-        if (this.keys.left.isDown) {
+        else if (this.keys.left.isDown) {
             this.currentMovement = Movement.Left;
 
             this.player.movePlayerLeft();
@@ -100,39 +100,18 @@ export default class Controls {
 
         }
 
-        this.checkReleased();
     }
 
     private emitKeyPressed() {
         const playerMovement: PlayerMovement = { 
             playerId: this.player.playerId, 
             x: this.player.x, 
-            y: this.player.y, 
-            currentMovement: this.currentMovement, 
-            previousMovement: this.previousMovement
+            y: this.player.y,
+            currentMovement: this.currentMovement
         };
 
         if (this.currentMovement !== this.previousMovement) {
             this.socket.emit('playerKeyPressed', [playerMovement]);
         }
-    }
-
-    private checkReleased() {
-        if ((this.previousMovement !== this.currentMovement) && this.previousMovement !== Movement.IdleLeft && this.previousMovement !== Movement.IdleRight && this.previousMovement !== Movement.None) {
-            console.log('key released client');
-            this.emitKeyReleased();
-        }
-    }
-
-    private emitKeyReleased() {
-        const playerMovement: PlayerMovement = { 
-            playerId: this.player.playerId, 
-            x: this.player.x, 
-            y: this.player.y, 
-            currentMovement: this.currentMovement, 
-            previousMovement: this.previousMovement
-        };
-
-        this.socket.emit('playerKeyReleased', playerMovement);
     }
 }

@@ -4,7 +4,6 @@ interface PlayerMovement {
     playerId: string,
     x: number,
     y: number,
-    currentMovement: Movement,
-    previousMovement: Movement
+    currentMovement: Movement
 }
 export default PlayerMovement;

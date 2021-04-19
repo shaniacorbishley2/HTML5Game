@@ -17,7 +17,10 @@ export const getters: GetterTree<IPlayerState, IRootState> = {
     },
     playerIds: () => state.players.map((player) => {
         return player.playerId;
-    })
+    }),
+    teamPlayers: () => {
+        return state.players.filter((player, index) => index !== 0 );
+    }
 };
 
 export const mutations: MutationTree<IPlayerState> = {

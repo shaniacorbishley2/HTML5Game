@@ -9,6 +9,7 @@ import GameObjectConfig from './../objects/interfaces/gameObjectConfig';
 import PlayerMovement from '../objects/interfaces/playerMovement';
 import MainPlayer from '../objects/player/mainPlayer';
 import PlayerCollision from '../objects/interfaces/playerCollision';
+import TeamPlayer from '../objects/player/teamPlayer';
 
 export default class PlayScene extends Scene {
   constructor () {
@@ -29,8 +30,6 @@ export default class PlayScene extends Scene {
   private tilemapLayers: Phaser.Tilemaps.TilemapLayer[] = [];
 
   private enermyGroup!: EnermyGroup;
-
-  private buttonPressed: boolean = false;
 
   private randomDataGenerator: Phaser.Math.RandomDataGenerator = new Phaser.Math.RandomDataGenerator('shania');
 
@@ -64,9 +63,7 @@ export default class PlayScene extends Scene {
       this.mainPlayer.controls.checkControls();
     }
 
-    if (this.buttonPressed) {
-
-    }
+    //this.checkTeamPlayersMovement();
   }
 
   // Init all layers
@@ -147,11 +144,11 @@ export default class PlayScene extends Scene {
   }
 
   // Logic to add another player to the scene
-  private addPlayer(playerId: string): Player {
+  private addPlayer(playerId: string): TeamPlayer {
 
-      const player = new Player(this, playerId); 
+      const player = new TeamPlayer(this, playerId); 
       // add to the players array
-      store.dispatch('playerModule/submitAddPlayer',player);
+      store.dispatch('playerModule/submitAddPlayer', player);
     
       // Add player to the scene
       this.add.existing(player);
@@ -182,67 +179,35 @@ export default class PlayScene extends Scene {
   private listeners() {
     this.socket.on('playerConnected', (playerIds: string[]) => {
       this.playerConnected(playerIds);
+      
     });
 
     this.socket.on('playerDisconnected', (playerIds: string[]) => {
       this.playerDisconnected(playerIds);
     });
 
-    
     this.socket.on('playerKeyPressed', (playerMovement: PlayerMovement[]) => {
-      this.buttonPressed = true;
-      const players: Player[] = store.getters['playerModule/players'];
+      const teamPlayers: TeamPlayer[] = store.getters['playerModule/teamPlayers'];
 
-      const player: Player | undefined = players.find((player: Player, index) => {
-        return player.playerId === playerMovement[0].playerId && index !== 0
-      });
+      const teamPlayer = teamPlayers.find((player: TeamPlayer) => player.playerId === playerMovement[0].playerId);
+
+      if (teamPlayer) {
+        teamPlayer.playerMovement = playerMovement[0];
+        teamPlayer.checkPlayerMovement();
+      }
       
-      this.additionalPlayerMovement(player, playerMovement[0].currentMovement);
-    });
-
-    this.socket.on('playerKeyReleased', (playerMovement: PlayerMovement[]) => {
     });
   }
 
-  private additionalPlayerMovement(player: Player | undefined, movement: Movement) {
-    if (player) {
-        
-        switch(movement) {
-          
-          case Movement.IdleLeft:
-            player.idle(movement);
-            break;
+  // private checkTeamPlayersMovement() {
+  //   const teamPlayers: TeamPlayer[] = store.getters['playerModule/teamPlayers'];
+  //   if (teamPlayers) {
 
-          case Movement.IdleRight:
-            player.idle(movement);
-            break;
-
-          case Movement.JumpLeft:
-            player.startJump(movement);
-            break;
-
-          case Movement.JumpRight: 
-            player.startJump(movement);
-            break;
-
-          case Movement.Left: 
-            player.movePlayerLeft();
-            break;
-        
-          case Movement.Right: 
-            player.movePlayerRight();
-            break;
-
-          case Movement.SideJumpLeft:
-            player.sideJump(movement);
-            break;
-
-          case Movement.SideJumpRight: 
-            player.sideJump(movement);
-            break;
-        }
-    }
-  }
+  //     teamPlayers.forEach((player: TeamPlayer) => {
+  //       player.checkPlayerMovement();
+  //     });
+  //   }
+  // }
 
 
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
