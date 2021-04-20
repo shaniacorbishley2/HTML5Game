@@ -2,7 +2,7 @@ import Player from '../objects/player/player';
 import Keys from './interfaces/keys';
 import Movement from './enums/movement';
 import { Socket } from 'socket.io-client';
-import PlayerMovement from './interfaces/playerMovement';
+import PlayerInfo from './interfaces/playerInfo';
 
 export default class Controls {
 
@@ -11,10 +11,10 @@ export default class Controls {
         this.socket = socket;
     }
     public player: Player;
+    
+    private socket: Socket;
 
     private keys!: Keys;
-
-    private socket!: Socket;
 
     private previousMovement: Movement = Movement.None;
 
@@ -103,15 +103,17 @@ export default class Controls {
     }
 
     private emitKeyPressed() {
-        const playerMovement: PlayerMovement = { 
+        const playerInfo: PlayerInfo = { 
             playerId: this.player.playerId, 
-            x: this.player.x, 
-            y: this.player.y,
-            currentMovement: this.currentMovement
+            playerMovement : {
+                x: this.player.x, 
+                y: this.player.y,
+                currentMovement: this.currentMovement
+            }
         };
 
         if (this.currentMovement !== this.previousMovement) {
-            this.socket.emit('playerKeyPressed', [playerMovement]);
+            this.socket.emit('playerKeyPressed', [playerInfo]);
         }
     }
 }

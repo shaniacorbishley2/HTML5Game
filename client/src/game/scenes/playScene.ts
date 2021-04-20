@@ -4,12 +4,11 @@ import { io, Socket } from 'socket.io-client';
 import EnermyGroup from '../objects/enermy/enermyGroup';
 import Enermy from '../objects/enermy/enermy';
 import { store } from '../../store';
-import Movement from '../objects/enums/movement';
 import GameObjectConfig from './../objects/interfaces/gameObjectConfig';
-import PlayerMovement from '../objects/interfaces/playerMovement';
 import MainPlayer from '../objects/player/mainPlayer';
 import PlayerCollision from '../objects/interfaces/playerCollision';
 import TeamPlayer from '../objects/player/teamPlayer';
+import PlayerInfo from '../objects/interfaces/playerInfo';
 
 export default class PlayScene extends Scene {
   constructor () {
@@ -34,6 +33,8 @@ export default class PlayScene extends Scene {
   private randomDataGenerator: Phaser.Math.RandomDataGenerator = new Phaser.Math.RandomDataGenerator('shania');
 
   private mainPlayer!: MainPlayer;
+
+  private playerInfo!: PlayerInfo;
 
 
   public create () {
@@ -63,7 +64,7 @@ export default class PlayScene extends Scene {
       this.mainPlayer.controls.checkControls();
     }
 
-    //this.checkTeamPlayersMovement();
+    this.checkTeamPlayersMovement();
   }
 
   // Init all layers
@@ -128,12 +129,12 @@ export default class PlayScene extends Scene {
     store.dispatch('playerModule/submitPlayerCollisions', playerCollisions);
   }
 
-  private playerConnected(serverPlayerIds: string[]) {
+  private playerConnected(playersInfo: PlayerInfo[]) {
     const playerIds: string[] = store.getters['playerModule/playerIds'];
-    if (serverPlayerIds.length !== playerIds.length) {
+    if (playersInfo.length !== playerIds.length) {
 
-      serverPlayerIds.forEach((element) =>  {
-        if (!playerIds.includes(element)) {
+      playersInfo.forEach((element) =>  {
+        if (!playerIds.includes(element.playerId)) {
 
           this.addPlayer(element);
           this.createCollisions();
@@ -144,11 +145,13 @@ export default class PlayScene extends Scene {
   }
 
   // Logic to add another player to the scene
-  private addPlayer(playerId: string): TeamPlayer {
+  private addPlayer(playerInfo: PlayerInfo): TeamPlayer {
 
-      const player = new TeamPlayer(this, playerId); 
+      const player = new TeamPlayer(this, playerInfo); 
       // add to the players array
       store.dispatch('playerModule/submitAddPlayer', player);
+
+      store.dispatch('playerModule/submitAddTeamPlayer', player);
     
       // Add player to the scene
       this.add.existing(player);
@@ -156,15 +159,15 @@ export default class PlayScene extends Scene {
       return player;
   }
 
-  private playerDisconnected(serverPlayerIds: string[]) {
+  private playerDisconnected(playersInfo: PlayerInfo[]) {
     const playerIds: string[] = store.getters['playerModule/playerIds'];
-    if (serverPlayerIds.length !== playerIds.length) {
+    if (playersInfo.length !== playerIds.length) {
 
-      playerIds.forEach((id) =>  {
-        if (!playerIds.includes(id)) {
+      playersInfo.forEach((playerInfo) =>  {
+        if (!playerIds.includes(playerInfo.playerId)) {
 
-         playerIds.filter(id => id !== id);
-         store.dispatch('playerModule/removePlayer', id);
+         playerIds.filter(id => id !== playerInfo.playerId);
+         store.dispatch('playerModule/removePlayer', playerInfo.playerId);
         }
       });
     }
@@ -177,37 +180,50 @@ export default class PlayScene extends Scene {
   }
 
   private listeners() {
-    this.socket.on('playerConnected', (playerIds: string[]) => {
-      this.playerConnected(playerIds);
+    this.socket.on('playerConnected', (playersInfo: PlayerInfo[]) => {
+      this.playerConnected(playersInfo);
       
     });
 
-    this.socket.on('playerDisconnected', (playerIds: string[]) => {
-      this.playerDisconnected(playerIds);
+    this.socket.on('playerDisconnected', (playersInfo: PlayerInfo[]) => {
+      this.playerDisconnected(playersInfo);
     });
 
-    this.socket.on('playerKeyPressed', (playerMovement: PlayerMovement[]) => {
-      const teamPlayers: TeamPlayer[] = store.getters['playerModule/teamPlayers'];
+    this.socket.on('playerKeyPressed', (playerInfo: PlayerInfo[]) => {
+      // if (playerInfo[0].playerMovement && this.playerInfo.playerMovement) {
+        
+      //   this.playerInfo.playerMovement = playerInfo[0].playerMovement;
+      //   const teamPlayers: TeamPlayer[] = store.getters['playerModule/teamPlayers'];
+  
+      //   const teamPlayer = teamPlayers.find((player: TeamPlayer) => player.playerId === this.playerInfo.playerId);
+  
+      //   if (teamPlayer) {
+      //     teamPlayer.newKeyPressed = true;
+      //   }
+      // }
+    });
 
-      const teamPlayer = teamPlayers.find((player: TeamPlayer) => player.playerId === playerMovement[0].playerId);
-
-      if (teamPlayer) {
-        teamPlayer.playerMovement = playerMovement[0];
-        teamPlayer.checkPlayerMovement();
-      }
-      
+    this.socket.on('playerLocation', (playersInfo: PlayerInfo[]) => {
+      console.log(playersInfo);
+      store.dispatch('playerModule/submitTeamPlayersLocation', playersInfo);
     });
   }
 
-  // private checkTeamPlayersMovement() {
-  //   const teamPlayers: TeamPlayer[] = store.getters['playerModule/teamPlayers'];
-  //   if (teamPlayers) {
+  private checkTeamPlayersMovement() {
+    const teamPlayers: TeamPlayer[] = store.getters['playerModule/teamPlayers'];
+    if (teamPlayers) {
 
-  //     teamPlayers.forEach((player: TeamPlayer) => {
-  //       player.checkPlayerMovement();
-  //     });
-  //   }
-  // }
+      teamPlayers.forEach((player: TeamPlayer) => {
+        if (!player.newKeyPressed) {
+          // Loop through movement 
+          player.checkPlayerMovement();
+        }
+        else {
+          player.newPlayerInfo = this.playerInfo;
+        }
+      });
+    }
+  }
 
 
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {

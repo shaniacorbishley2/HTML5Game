@@ -13,7 +13,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     private jumpVelocity: number = -150;
 
     constructor (scene: Phaser.Scene, playerId: string) {
-        super(scene, 340, 0, 'bear');
+        super(scene, 340, 49, 'bear');
         this.playerId = playerId;
         this.scene.physics.world.enable(this);
         this.setGravity(0, 5);

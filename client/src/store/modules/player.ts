@@ -1,6 +1,8 @@
 import PlayerCollision from '@/game/objects/interfaces/playerCollision';
 import PlayerHealth from '@/game/objects/interfaces/playerHealth';
+import PlayerInfo from '@/game/objects/interfaces/playerInfo';
 import Player from '@/game/objects/player/player';
+import TeamPlayer from '@/game/objects/player/teamPlayer';
 import {GetterTree, MutationTree, ActionTree, Module } from 'vuex';
 import  IRootState  from '../states/interfaces';
 import IPlayerState from '../states/interfaces/playerState';
@@ -18,9 +20,7 @@ export const getters: GetterTree<IPlayerState, IRootState> = {
     playerIds: () => state.players.map((player) => {
         return player.playerId;
     }),
-    teamPlayers: () => {
-        return state.players.filter((player, index) => index !== 0 );
-    }
+    teamPlayers: () => state.teamPlayers
 };
 
 export const mutations: MutationTree<IPlayerState> = {
@@ -55,6 +55,23 @@ export const mutations: MutationTree<IPlayerState> = {
             }
             playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject);
         });
+    },
+    teamPlayersMovement: (state: IPlayerState, playersInfo: PlayerInfo[]) => {
+        state.teamPlayers.forEach((teamPlayer: TeamPlayer) => {
+            const matchingPlayer = playersInfo.find((player) => teamPlayer.playerId === player.playerId);
+            console.log(matchingPlayer);
+
+            if (matchingPlayer && matchingPlayer.playerMovement) {
+                
+                teamPlayer.setY(matchingPlayer.playerMovement.y);
+                teamPlayer.setX(matchingPlayer.playerMovement.x);
+            }
+        });
+    },
+    addTeamPlayer: (state: IPlayerState, teamPlayer: TeamPlayer) => {
+        if (!state.teamPlayers.includes(teamPlayer)) {
+            state.teamPlayers.push(teamPlayer);
+        }
     }
 };
 
@@ -73,6 +90,12 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
     },
     submitPlayerCollisions({ commit }, playerCollision: PlayerCollision ) {
         commit('playerCollisions', playerCollision);
+    },
+    submitTeamPlayersLocation({ commit }, playersInfo: PlayerInfo[]) {
+        commit('teamPlayersMovement', playersInfo);
+    },
+    submitAddTeamPlayer({ commit }, teamPlayer: TeamPlayer) {
+        commit('addTeamPlayer', teamPlayer);
     }
 };
 
