@@ -18,7 +18,5 @@ export default class EnermyGroup extends Phaser.Physics.Arcade.Group {
 
     public setEnermyVelocity() {
         this.setVelocity(this.randomDataGenerator.integerInRange(100, 200), 50, 10);
-        console.log(this);
-        
     }
 }

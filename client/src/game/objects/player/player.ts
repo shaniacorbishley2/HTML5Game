@@ -19,6 +19,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.setGravity(0, 5);
         this.setCollisionBox();
         this.setCollideWorldBounds(true);
+        this.setImmovable(true);
     }
 
     // Move player left 
@@ -60,7 +61,7 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
     // Jump to the side
     public sideJump(direction: Movement) {
         this.setVelocityY(this.jumpVelocity);
-        this.setVelocityX(direction === Movement.SideJumpLeft ? -10 : 10);
+        this.setVelocityX(direction === Movement.SideJumpLeft ? -50 : 50);
         direction === Movement.SideJumpLeft ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
     }
 

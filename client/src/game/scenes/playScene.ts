@@ -166,8 +166,8 @@ export default class PlayScene extends Scene {
       playersInfo.forEach((playerInfo) =>  {
         if (!playerIds.includes(playerInfo.playerId)) {
 
-         playerIds.filter(id => id !== playerInfo.playerId);
-         store.dispatch('playerModule/removePlayer', playerInfo.playerId);
+          playerIds.filter(id => id !== playerInfo.playerId);
+          store.dispatch('playerModule/removePlayer', playerInfo.playerId);
         }
       });
     }
@@ -189,22 +189,11 @@ export default class PlayScene extends Scene {
       this.playerDisconnected(playersInfo);
     });
 
-    this.socket.on('playerKeyPressed', (playerInfo: PlayerInfo[]) => {
-      // if (playerInfo[0].playerMovement && this.playerInfo.playerMovement) {
-        
-      //   this.playerInfo.playerMovement = playerInfo[0].playerMovement;
-      //   const teamPlayers: TeamPlayer[] = store.getters['playerModule/teamPlayers'];
-  
-      //   const teamPlayer = teamPlayers.find((player: TeamPlayer) => player.playerId === this.playerInfo.playerId);
-  
-      //   if (teamPlayer) {
-      //     teamPlayer.newKeyPressed = true;
-      //   }
-      // }
+    this.socket.on('playerKeyPressed', async (playersInfo: PlayerInfo[]) => {
+      await store.dispatch('playerModule/submitTeamPlayersMovement', playersInfo);
     });
 
     this.socket.on('playerLocation', (playersInfo: PlayerInfo[]) => {
-      console.log(playersInfo);
       store.dispatch('playerModule/submitTeamPlayersLocation', playersInfo);
     });
   }
@@ -214,13 +203,9 @@ export default class PlayScene extends Scene {
     if (teamPlayers) {
 
       teamPlayers.forEach((player: TeamPlayer) => {
-        if (!player.newKeyPressed) {
           // Loop through movement 
           player.checkPlayerMovement();
-        }
-        else {
-          player.newPlayerInfo = this.playerInfo;
-        }
+  
       });
     }
   }

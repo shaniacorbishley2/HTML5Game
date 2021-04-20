@@ -56,10 +56,9 @@ export const mutations: MutationTree<IPlayerState> = {
             playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject);
         });
     },
-    teamPlayersMovement: (state: IPlayerState, playersInfo: PlayerInfo[]) => {
+    teamPlayersLocation: (state: IPlayerState, playersInfo: PlayerInfo[]) => {
         state.teamPlayers.forEach((teamPlayer: TeamPlayer) => {
             const matchingPlayer = playersInfo.find((player) => teamPlayer.playerId === player.playerId);
-            console.log(matchingPlayer);
 
             if (matchingPlayer && matchingPlayer.playerMovement) {
                 
@@ -72,6 +71,15 @@ export const mutations: MutationTree<IPlayerState> = {
         if (!state.teamPlayers.includes(teamPlayer)) {
             state.teamPlayers.push(teamPlayer);
         }
+    },
+    teamPlayersMovement: (state: IPlayerState, playersInfo: PlayerInfo[]) => {
+        state.teamPlayers.forEach((teamPlayer: TeamPlayer) => {
+            const matchingPlayer = playersInfo.find((player) => teamPlayer.playerId === player.playerId);
+
+            if (matchingPlayer && matchingPlayer.playerMovement) {
+                teamPlayer.movement = matchingPlayer.playerMovement.currentMovement;
+            }
+        });
     }
 };
 
@@ -92,10 +100,13 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
         commit('playerCollisions', playerCollision);
     },
     submitTeamPlayersLocation({ commit }, playersInfo: PlayerInfo[]) {
-        commit('teamPlayersMovement', playersInfo);
+        commit('teamPlayersLocation', playersInfo);
     },
     submitAddTeamPlayer({ commit }, teamPlayer: TeamPlayer) {
         commit('addTeamPlayer', teamPlayer);
+    },
+    submitTeamPlayersMovement({ commit }, playersInfo: PlayerInfo[]) {
+        commit('teamPlayersMovement', playersInfo);
     }
 };
 

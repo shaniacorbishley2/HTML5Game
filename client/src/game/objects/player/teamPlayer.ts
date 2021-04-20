@@ -4,37 +4,22 @@ import PlayerInfo from "../interfaces/playerInfo";
 
 export default class TeamPlayer extends Player {
 
-    public currentPlayerInfo: PlayerInfo;
-
-    public newKeyPressed: boolean = false;
+    public movement: Movement | undefined;
 
     constructor (scene: Phaser.Scene, playerInfo: PlayerInfo ) {
         super(scene, playerInfo.playerId);
-        this.currentPlayerInfo = playerInfo;
+        this.movement = playerInfo.playerMovement?.currentMovement;
     }
 
-    public set newPlayerInfo(playerInfo: PlayerInfo) {
-        this.currentPlayerInfo = playerInfo;
-        this.newKeyPressed = false; 
-    }
 
     public checkPlayerMovement() {
-        switch(this.currentPlayerInfo.playerMovement?.currentMovement) { 
-            case Movement.IdleRight:
-                this.idle(this.currentPlayerInfo.playerMovement?.currentMovement);
-                break;
-
-            case Movement.IdleLeft:
-                this.idle(this.currentPlayerInfo.playerMovement?.currentMovement);
-                break;
-
-
+        switch(this.movement) {
             case Movement.JumpLeft:
-                this.startJump(this.currentPlayerInfo.playerMovement?.currentMovement);
+                this.startJump(this.movement);
                 break;
 
             case Movement.JumpRight: 
-                this.startJump(this.currentPlayerInfo.playerMovement?.currentMovement);
+                this.startJump(this.movement);
                 break;
 
             case Movement.Left: 
@@ -44,6 +29,15 @@ export default class TeamPlayer extends Player {
             case Movement.Right: 
                 this.movePlayerRight();
                 break;
+
+            case Movement.IdleRight:
+                this.idle(this.movement);
+                break;
+
+            case Movement.IdleLeft:
+                this.idle(this.movement);
+                break;
+            
         }
             
     }
