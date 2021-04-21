@@ -1,6 +1,5 @@
 <template  id="app">
-
-   <Game/>
+  <Game/>
 
 </template>
 

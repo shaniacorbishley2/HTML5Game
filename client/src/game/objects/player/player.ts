@@ -3,7 +3,6 @@ import Movement from './../enums/movement';
 import Phaser from 'phaser';
 import PlayerHealth from './../interfaces/playerHealth';
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-
     public playerId: string = '';
 
     public playerHealth: number = 100;

@@ -42,11 +42,10 @@ export const mutations: MutationTree<IPlayerState> = {
     removePlayer: (state: IPlayerState, playerId: string) => {
         state.players.filter((player) => {
             if (player.playerId === playerId) {
-      
-              player.destroy();
+                player.destroy();
             }
             return player.playerId !== playerId;
-          });
+        });
     },
     playerCollisions: (state: IPlayerState, playerCollision: PlayerCollision) => {
         state.players.forEach((player: Player) => {
@@ -78,6 +77,13 @@ export const mutations: MutationTree<IPlayerState> = {
 
             if (matchingPlayer && matchingPlayer.playerMovement) {
                 teamPlayer.movement = matchingPlayer.playerMovement.currentMovement;
+                if (teamPlayer.x !== matchingPlayer.playerMovement.x) {
+                    teamPlayer.setX(matchingPlayer.playerMovement.x);
+                    console.log('testX');
+                }
+                if (teamPlayer.y !== matchingPlayer.playerMovement.y) {
+                    teamPlayer.setY(matchingPlayer.playerMovement.y);
+                }
             }
         });
     }

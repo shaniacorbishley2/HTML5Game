@@ -1,7 +1,6 @@
 import Player from "./player";
 import Movement from '../enums/movement'
 import PlayerInfo from "../interfaces/playerInfo";
-
 export default class TeamPlayer extends Player {
 
     public movement: Movement | undefined;
@@ -10,7 +9,6 @@ export default class TeamPlayer extends Player {
         super(scene, playerInfo.playerId);
         this.movement = playerInfo.playerMovement?.currentMovement;
     }
-
 
     public checkPlayerMovement() {
         switch(this.movement) {
@@ -38,8 +36,7 @@ export default class TeamPlayer extends Player {
                 this.idle(this.movement);
                 break;
             
-        }
-            
+        }  
     }
     
 }

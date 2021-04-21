@@ -42,7 +42,6 @@ export default class GameServer {
       });
 
     });
-
   }
 
   private playerConnected(playerId: string) {
@@ -79,7 +78,6 @@ export default class GameServer {
       }
 
     });
-
   }
 
 }

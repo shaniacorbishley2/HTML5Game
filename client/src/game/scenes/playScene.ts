@@ -34,9 +34,6 @@ export default class PlayScene extends Scene {
 
   private mainPlayer!: MainPlayer;
 
-  private playerInfo!: PlayerInfo;
-
-
   public create () {
 
     //SOCKET IO - this would change to a live
@@ -82,7 +79,6 @@ export default class PlayScene extends Scene {
   }
 
   private initMap() {
-
     this.physics.world.setBounds( 0, 0, 640, 320);
 
     this.physics.world.setBoundsCollision(true, true, true, true);
@@ -96,8 +92,6 @@ export default class PlayScene extends Scene {
     
     // Filter out the layers that don't need collisions
     this.collisionLayers = this.filterCollisionLayers(this.tilemapLayers);
-
-    
   }
 
   private createEnermies() {
@@ -173,8 +167,6 @@ export default class PlayScene extends Scene {
     }
   }
 
-
-
   private removeEnermy(enermy: Enermy) {
     enermy.destroy();
   }
@@ -209,7 +201,6 @@ export default class PlayScene extends Scene {
       });
     }
   }
-
 
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
     const player = <Player>obj1;
