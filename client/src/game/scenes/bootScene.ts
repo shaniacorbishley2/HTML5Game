@@ -17,6 +17,10 @@ export default class BootScene extends Scene {
     // Bomb - enermy 1
     this.load.image('bomb', 'assets/bomb.png');
 
+    // Collectable gems
+    this.load.image('red-gem', 'assets/red-gem.png');
+    this.load.image('yellow-gem', 'assets/yellow-gem.png');
+
     // Tilemap
     this.load.tilemapTiledJSON('tilemap', 'assets/nature-tilemap.json');
     

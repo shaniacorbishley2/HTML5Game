@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
+import Movement from './enums/movement';
 import PlayerInfo from './interfaces/playerInfo';
 export default class GameServer {
   private app = express();
@@ -33,7 +34,7 @@ export default class GameServer {
         this.io.emit('playerKeyPressed', this.players);
 
         console.log(playerInfo[0].playerId, playerInfo[0].playerMovement.previousMovement, playerInfo[0].playerMovement.currentMovement, playerInfo[0].playerMovement.x, playerInfo[0].playerMovement.y);
-        //console.log(this.players)
+        console.log(this.players)
       });
 
       socket.on('playerLocation', (playerInfo: PlayerInfo[]) => {
@@ -51,7 +52,12 @@ export default class GameServer {
 
     // Else let the player join
     // If there is only one player then continue as normal
-    this.players.push({playerId: playerId, playerMovement: null});
+    this.players.push({playerId: playerId, playerMovement: {
+      currentMovement: Movement.None,
+      previousMovement: Movement.None,
+      x: 0,
+      y: 0
+    }});
     
       // If there is already one player in the game, we need to call the logic to 'add another player' emit the event on created
 
@@ -62,7 +68,7 @@ export default class GameServer {
   }
 
   private playerDisconnect(playerId: string) {
-    console.log(`player ${playerId} disconnected`);
+    //console.log(`player ${playerId} disconnected`);
 
     this.players = this.players.filter((player: PlayerInfo) => player.playerId !== playerId);
 
@@ -70,7 +76,7 @@ export default class GameServer {
   }
 
   private updatePlayerMovement(playerInfo: PlayerInfo) {
-    console.log(this.players);
+    //(this.players);
     this.players.forEach((player: PlayerInfo) => {
 
       if (player.playerId === playerInfo.playerId) {    

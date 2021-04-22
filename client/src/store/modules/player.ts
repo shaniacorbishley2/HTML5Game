@@ -2,7 +2,6 @@ import PlayerCollision from '@/game/objects/interfaces/playerCollision';
 import PlayerHealth from '@/game/objects/interfaces/playerHealth';
 import PlayerInfo from '@/game/objects/interfaces/playerInfo';
 import Player from '@/game/objects/player/player';
-import TeamPlayer from '@/game/objects/player/teamPlayer';
 import {GetterTree, MutationTree, ActionTree, Module } from 'vuex';
 import  IRootState  from '../states/interfaces';
 import IPlayerState from '../states/interfaces/playerState';
@@ -20,17 +19,12 @@ export const getters: GetterTree<IPlayerState, IRootState> = {
     playerIds: () => state.players.map((player) => {
         return player.playerId;
     }),
-    teamPlayers: () => state.teamPlayers
+    teamPlayers: (): Player[] => {
+        return state.players.filter((player: Player) => player.playerId !== state.mainPlayerId);
+    }
 };
 
 export const mutations: MutationTree<IPlayerState> = {
-    updateHealth: (state: IPlayerState, playerHealth: PlayerHealth) => {
-        state.players.find((player: Player, index) => {
-            if (player.playerId == playerHealth.playerId) {
-                state.players[index].playerHealth += playerHealth.health;
-            }
-        });
-    },
     mainPlayerId: (state: IPlayerState, playerId: string) => {
         state.mainPlayerId = playerId;
     },
@@ -39,62 +33,18 @@ export const mutations: MutationTree<IPlayerState> = {
             state.players.push(player);
         }
     },
-    removePlayer: (state: IPlayerState, playerId: string) => {
-        state.players.filter((player) => {
-            if (player.playerId === playerId) {
-                player.destroy();
-            }
-            return player.playerId !== playerId;
-        });
-    },
-    playerCollisions: (state: IPlayerState, playerCollision: PlayerCollision) => {
-        state.players.forEach((player: Player) => {
-            if (playerCollision.callback) {
-                playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject, playerCollision.callback);
-            }
-            playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject);
-        });
-    },
-    teamPlayersLocation: (state: IPlayerState, playersInfo: PlayerInfo[]) => {
-        state.teamPlayers.forEach((teamPlayer: TeamPlayer) => {
-            const matchingPlayer = playersInfo.find((player) => teamPlayer.playerId === player.playerId);
-
-            if (matchingPlayer && matchingPlayer.playerMovement) {
-                
-                teamPlayer.setY(matchingPlayer.playerMovement.y);
-                teamPlayer.setX(matchingPlayer.playerMovement.x);
-            }
-        });
-    },
-    addTeamPlayer: (state: IPlayerState, teamPlayer: TeamPlayer) => {
-        if (!state.teamPlayers.includes(teamPlayer)) {
-            state.teamPlayers.push(teamPlayer);
-        }
-    },
-    playersMovement: (state: IPlayerState, playersInfo: PlayerInfo[]) => {
-        state.players.forEach((player: Player) => {
-            const matchingPlayer = playersInfo.find((playerInfo) => player.playerId === playerInfo.playerId);
-
-            if (matchingPlayer && matchingPlayer.playerMovement) {
-
-                player.currentMovement = matchingPlayer.playerMovement.currentMovement;
-                player.previousMovement = matchingPlayer.playerMovement.previousMovement;
-
-                if (player.x !== matchingPlayer.playerMovement.x) {
-                    player.setX(matchingPlayer.playerMovement.x);
-                    console.log('testX');
-                }
-                if (player.y !== matchingPlayer.playerMovement.y) {
-                    player.setY(matchingPlayer.playerMovement.y);
-                }
-            }
-        });
-    }
+    playerDisconnected: ( state: IPlayerState, players: Player[] ) => {
+        state.players = players;
+    }   
 };
 
 export const actions: ActionTree<IPlayerState, IRootState> = {
-    updateHealth({ commit }, playerHealth: PlayerHealth) {
-        commit('updateHealth', playerHealth);
+    submitUpdateHealth({}, playerHealth: PlayerHealth) {
+        state.players.find((player: Player, index) => {
+            if (player.playerId == playerHealth.playerId) {
+                state.players[index].playerHealth += playerHealth.health;
+            }
+        });
     },
     submitMainPlayerId({ commit }, playerId: string) {
         commit('mainPlayerId', playerId);
@@ -102,20 +52,49 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
     submitAddPlayer({ commit}, player: Player) {
         commit('addPlayer', player);
     },
-    submitRemovePlayer({ commit }, playerId: string) {
-        commit('removePlayer', playerId);
+    submitPlayerCollisions({}, playerCollision: PlayerCollision ) {
+        state.players.forEach((player: Player) => {
+            if (playerCollision.callback) {
+                playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject, playerCollision.callback);
+            }
+            playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject);
+        });
     },
-    submitPlayerCollisions({ commit }, playerCollision: PlayerCollision ) {
-        commit('playerCollisions', playerCollision);
+    submitTeamPlayersLocation({}, playersInfo: PlayerInfo[]) {
+        state.players.forEach((player: Player) => {
+            const matchingPlayer = playersInfo.find((playerInfo) => player.playerId === playerInfo.playerId);
+
+            if (matchingPlayer && matchingPlayer.playerMovement && player.playerMovement && matchingPlayer.playerId !== state.mainPlayerId) {
+                
+                player.setX(matchingPlayer.playerMovement.x);
+                player.setY(matchingPlayer.playerMovement.y); 
+            }
+        });
     },
-    submitTeamPlayersLocation({ commit }, playersInfo: PlayerInfo[]) {
-        commit('teamPlayersLocation', playersInfo);
+    submitPlayersMovement({}, playersInfo: PlayerInfo[]) {
+        state.players.forEach((player: Player) => {
+            const matchingPlayer = playersInfo.find((playerInfo) => player.playerId === playerInfo.playerId);
+
+            if (matchingPlayer && matchingPlayer.playerMovement && player.playerMovement) {
+
+                player.playerMovement.currentMovement = matchingPlayer.playerMovement.currentMovement;
+                player.playerMovement.previousMovement = matchingPlayer.playerMovement.previousMovement;
+            }
+        });
     },
-    submitAddTeamPlayer({ commit }, teamPlayer: TeamPlayer) {
-        commit('addTeamPlayer', teamPlayer);
-    },
-    submitPlayersMovement({ commit }, playersInfo: PlayerInfo[]) {
-        commit('playersMovement', playersInfo);
+    submitPlayerDisconnected({ commit }, playersInfo: PlayerInfo[]) {
+        if (playersInfo.length !== state.players.length) {
+            playersInfo.forEach((playerInfo: PlayerInfo) =>  {
+                const updatedPlayers: Player[] = state.players.filter((player) => {
+                    if (player.playerId !== playerInfo.playerId) {
+                        player.destroy();
+                    }
+                    return player.playerId === playerInfo.playerId;
+                });
+
+                commit('playerDisconnected', updatedPlayers);
+            });
+        }
     }
 };
 

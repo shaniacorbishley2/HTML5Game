@@ -1,6 +1,6 @@
 import PlayerMovement from "./playerMovement";
 interface PlayerInfo {
     playerId: string,
-    playerMovement: PlayerMovement | null
+    playerMovement: PlayerMovement
 }
 export default PlayerInfo;

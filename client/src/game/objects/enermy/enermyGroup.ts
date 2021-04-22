@@ -8,11 +8,18 @@ export default class EnermyGroup extends Phaser.Physics.Arcade.Group {
     }
 
     public addEnermies(enermies: Phaser.GameObjects.Image[]) {
-        this.addMultiple(enermies, true);
-        this.setEnermyVelocity();
-        this.children.each((child) => {
-            child.body.position.x =  this.randomDataGenerator.integerInRange(100, 200);
-        })
+        this.scene.time.addEvent(
+            {
+                delay: 4000,
+                callback: () =>  {
+                    this.addMultiple(enermies, true);
+                    this.setEnermyVelocity();
+                    this.children.each((child) => {
+                        child.body.position.x =  this.randomDataGenerator.integerInRange(100, 200);
+                    });
+                }
+            }
+        );
     }
 
     public setEnermyVelocity() {

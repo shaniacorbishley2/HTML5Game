@@ -1,8 +1,7 @@
 import Player from "@/game/objects/player";
 interface IPlayerState {
-    players: Player[];
+    players: any[];
     mainPlayerId: string;
-    teamPlayers: TeamPlayer[];
 };
 
 export default IPlayerState;

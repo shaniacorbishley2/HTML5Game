@@ -6,8 +6,8 @@ import { store } from '../../store';
 import GameObjectConfig from './../objects/interfaces/gameObjectConfig';
 import MainPlayer from '../objects/player/mainPlayer';
 import PlayerCollision from '../objects/interfaces/playerCollision';
-import TeamPlayer from '../objects/player/teamPlayer';
 import PlayerInfo from '../objects/interfaces/playerInfo';
+import CollectableGroup from '../objects/collectable/collectableGroup';
 
 export default class PlayScene extends Scene {
   constructor () {
@@ -29,6 +29,8 @@ export default class PlayScene extends Scene {
 
   private enermyGroup!: EnermyGroup;
 
+  private collectableGroup!: CollectableGroup;
+
   private randomDataGenerator: Phaser.Math.RandomDataGenerator = new Phaser.Math.RandomDataGenerator('shania');
 
   private mainPlayer!: MainPlayer;
@@ -38,7 +40,9 @@ export default class PlayScene extends Scene {
     //SOCKET IO - this would change to a live
     this.socket = io('10.106.101.12:3000');
 
-    this.socket.on('connect', () => {
+    this.socket.on('connect', async () => {
+
+      console.log('hello');
 
       console.log(this.socket.id);
 
@@ -48,9 +52,13 @@ export default class PlayScene extends Scene {
   
       this.createEnermies();
 
+      this.createCollectables();
+
+      // Collisions between player/layer enermy etc
       this.createCollisions();
-    
-      this.listeners();
+      
+      // Socket io events
+      await this.listeners();
     });
 
   }
@@ -60,7 +68,7 @@ export default class PlayScene extends Scene {
       this.mainPlayer.controls.checkControls();
     }
 
-    this.checkTeamPlayersMovement();
+    this.checkPlayersMovement();
   }
 
   // Init all layers
@@ -96,11 +104,11 @@ export default class PlayScene extends Scene {
   private createEnermies() {
     const gameObjectConfig: GameObjectConfig = { amount: 5, scene: this, texture: 'bomb', x: 0, y: 0 }
 
-    const enermyConfig: Phaser.Types.GameObjects.Group.GroupCreateConfig = store.getters['enermyModule/config'];
+    const enermyConfig: Phaser.Types.GameObjects.Group.GroupCreateConfig = store.getters['gameObjectModule/enermyConfig'];
 
-    store.dispatch('enermyModule/submitEnermyObjects', gameObjectConfig);
+    store.dispatch('gameObjectModule/submitEnermyObjects', gameObjectConfig);
 
-    const enermyObjects: Phaser.GameObjects.Image[] = store.getters['enermyModule/enermyObjects'];
+    const enermyObjects: Phaser.GameObjects.Image[] = store.getters['gameObjectModule/enermyObjects'];
 
     this.enermyGroup = new EnermyGroup(this.physics.world, this, enermyConfig, this.randomDataGenerator);
 
@@ -115,10 +123,11 @@ export default class PlayScene extends Scene {
 
       store.dispatch('playerModule/submitPlayerCollisions', playerCollisions);
 
-      this.physics.add.collider(this.enermyGroup, layer)
+      this.physics.add.collider(this.enermyGroup, layer);
+      this.physics.add.collider(this.collectableGroup, layer);
     });
 
-    const playerCollisions: PlayerCollision = {scene: this, colliderObject: this.enermyGroup, callback: this.enermyPlayerCollide.bind(this) };
+    const playerCollisions: PlayerCollision = { scene: this, colliderObject: this.enermyGroup, callback: this.enermyPlayerCollide.bind(this) };
     store.dispatch('playerModule/submitPlayerCollisions', playerCollisions);
   }
 
@@ -138,13 +147,11 @@ export default class PlayScene extends Scene {
   }
 
   // Logic to add another player to the scene
-  private addPlayer(playerInfo: PlayerInfo): TeamPlayer {
+  private addPlayer(playerInfo: PlayerInfo): Player {
 
-      const player = new TeamPlayer(this, playerInfo); 
+      const player = new Player(this, playerInfo); 
       // add to the players array
       store.dispatch('playerModule/submitAddPlayer', player);
-
-      store.dispatch('playerModule/submitAddTeamPlayer', player);
     
       // Add player to the scene
       this.add.existing(player);
@@ -152,36 +159,22 @@ export default class PlayScene extends Scene {
       return player;
   }
 
-  private playerDisconnected(playersInfo: PlayerInfo[]) {
-    const playerIds: string[] = store.getters['playerModule/playerIds'];
-    if (playersInfo.length !== playerIds.length) {
-
-      playersInfo.forEach((playerInfo) =>  {
-        if (!playerIds.includes(playerInfo.playerId)) {
-
-          playerIds.filter(id => id !== playerInfo.playerId);
-          store.dispatch('playerModule/removePlayer', playerInfo.playerId);
-        }
-      });
-    }
-  }
-
   private removeEnermy(enermy: Phaser.GameObjects.Image) {
     enermy.destroy();
   }
 
-  private listeners() {
+  private async listeners() {
     this.socket.on('playerConnected', (playersInfo: PlayerInfo[]) => {
       this.playerConnected(playersInfo);
       
     });
 
-    this.socket.on('playerDisconnected', (playersInfo: PlayerInfo[]) => {
-      this.playerDisconnected(playersInfo);
+    this.socket.on('playerDisconnected', async (playersInfo: PlayerInfo[]) => {
+      await store.dispatch('playerModule/submitPlayerDisconnected', playersInfo);
     });
 
     this.socket.on('playerKeyPressed', async (playersInfo: PlayerInfo[]) => {
-      await store.dispatch('playerModule/submitPlayersMovement', playersInfo);
+      store.dispatch('playerModule/submitPlayersMovement', playersInfo);
     });
 
     this.socket.on('playerLocation', (playersInfo: PlayerInfo[]) => {
@@ -189,13 +182,16 @@ export default class PlayScene extends Scene {
     });
   }
 
-  private checkTeamPlayersMovement() {
-    const players: Player[] = store.getters['playerModule/players'];
-    if (players) {
+  private checkPlayersMovement() {
+    const players: MainPlayer[] = store.getters['playerModule/players'];
 
-      players.forEach((player: Player) => {
+    if (players && players.length > 0) {
+      players.forEach((player) => {
+          if (player !== undefined) {
+
+            player.checkPlayerMovement();
+          }
           // Loop through movement 
-          player.checkPlayerMovement();
   
       });
     }
@@ -207,5 +203,21 @@ export default class PlayScene extends Scene {
 
     player.playerHit();
     this.removeEnermy(enermy);
+  }
+
+  private createCollectables() {
+    const gameObjectConfig: GameObjectConfig = { amount: 3, scene: this, texture: 'yellow-gem', x: 340, y: 49 }
+
+    store.dispatch('gameObjectModule/submitCollectableObjects', gameObjectConfig);
+
+    const collectableConfig: Phaser.Types.GameObjects.Group.GroupCreateConfig = store.getters['gameObjectModule/collectableConfig'];
+
+    store.dispatch('gameObjectModule/submitCollectableObjects', gameObjectConfig);
+
+    const collectableObjects: Phaser.GameObjects.Image[] = store.getters['gameObjectModule/collectableObjects'];
+
+    this.collectableGroup = new CollectableGroup(this.physics.world, this, collectableConfig, this.randomDataGenerator);
+
+    this.collectableGroup.addCollectables(collectableObjects); 
   }
 }

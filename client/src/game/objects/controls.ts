@@ -1,16 +1,16 @@
-import Player from '../objects/player/player';
 import Keys from './interfaces/keys';
 import Movement from './enums/movement';
 import { Socket } from 'socket.io-client';
 import PlayerInfo from './interfaces/playerInfo';
+import MainPlayer from './player/mainPlayer';
 
 export default class Controls {
 
-    constructor(player: Player, socket: Socket) {
+    constructor(player: MainPlayer, socket: Socket) {
         this.player = player;
         this.socket = socket;
     }
-    public player: Player;
+    public player: MainPlayer;
     
     private socket: Socket;
 
@@ -47,6 +47,7 @@ export default class Controls {
             
 
         }
+
         else if (this.keys.right.isDown) {
             if (this.keys.up.isUp) {
                 this.currentMovement = Movement.Right;

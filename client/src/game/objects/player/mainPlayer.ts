@@ -1,10 +1,10 @@
 import Controls from "./../controls";
-import Player from "./player";
 import { Socket } from 'socket.io-client';
 import { store } from '../../../store';
 import Phaser from 'phaser';
 import PlayerInfo from "../interfaces/playerInfo";
 import Movement from "../enums/movement";
+import Player from "./player";
 
 export default class MainPlayer extends Player {
     public controls!: Controls;
@@ -12,18 +12,28 @@ export default class MainPlayer extends Player {
     private socket: Socket;
 
     constructor (scene: Phaser.Scene, socket: Socket ) {
-        super(scene, socket.id);
+        super(scene, 
+            {
+                playerId: socket.id, 
+                playerMovement:  {
+                    currentMovement: Movement.None,
+                    previousMovement: Movement.None,
+                    x: 0,
+                    y: 0
+                }
+            });
+
         this.socket = socket;
-        this.initPlayer();
+        this.initMainPlayer();
     }
 
-    private addPlayerControls(player: Player) {
+    private addPlayerControls() {
         // Create controls
-        this.controls = new Controls(player, this.socket);
+        this.controls = new Controls(this, this.socket);
         this.controls.createKeys();
     }
 
-    private initPlayer() {
+    private initMainPlayer() {
         const playerInfo: PlayerInfo = {
             playerId: this.socket.id,
             playerMovement: {
@@ -42,6 +52,6 @@ export default class MainPlayer extends Player {
 
         this.socket.emit('playerLocation', [playerInfo]);
 
-        this.addPlayerControls(this);
+        this.addPlayerControls();
     }
 }

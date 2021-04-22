@@ -2,22 +2,28 @@ import { store } from '../../../store';
 import Movement from './../enums/movement';
 import Phaser from 'phaser';
 import PlayerHealth from './../interfaces/playerHealth';
+import PlayerInfo from '../interfaces/playerInfo';
+import PlayerMovement from '../interfaces/playerMovement';
 export default class Player extends Phaser.Physics.Arcade.Sprite {
-    public playerId: string = '';
+    public playerId: string;
 
     public playerHealth: number = 100;
 
-    public currentMovement: Movement | null = Movement.None;
-
-    public previousMovement: Movement | null = Movement.None;
+    public playerMovement: PlayerMovement;
 
     private moveVelocity: number = 60;
 
-    private jumpVelocity: number = -150;
+    private jumpVelocity: number = -170;
 
-    constructor (scene: Phaser.Scene, playerId: string) {
+    constructor (scene: Phaser.Scene, playerInfo: PlayerInfo) {
         super(scene, 340, 49, 'bear');
-        this.playerId = playerId;
+        this.playerId = playerInfo.playerId;
+        this.playerMovement = playerInfo.playerMovement;
+
+        this.initPlayer();
+    }
+
+    private initPlayer() {
         this.scene.physics.world.enable(this);
         this.setGravity(0, 5);
         this.setCollisionBox();
@@ -89,34 +95,37 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             playerId: this.playerId,
             health: -10
         }
-        store.dispatch('playerModule/updateHealth', playerHealth);
+        store.dispatch('playerModule/submitUpdateHealth', playerHealth);
     }
 
     public checkPlayerMovement() {
-        if (this.currentMovement === Movement.SideJumpLeft && this.body.blocked.down) {
-            this.sideJumpLeft();
-        }
+        if (this.playerMovement) {
 
-        else if (this.currentMovement === Movement.SideJumpRight && this.body.blocked.down) {
-            this.sideJumpRight();
+            if (this.playerMovement.currentMovement === Movement.SideJumpLeft && this.body.blocked.down) {
+                this.sideJumpLeft();
+            }
+    
+            else if (this.playerMovement.currentMovement === Movement.SideJumpRight && this.body.blocked.down) {
+                this.sideJumpRight();
+            }
+    
+            else if (this.playerMovement.currentMovement === Movement.Left) {
+                this.playerMovement.currentMovement = Movement.Left;
+                this.movePlayerLeft();
+            }
+    
+            else if (this.playerMovement.currentMovement === Movement.Right) {
+                this.playerMovement.currentMovement = Movement.Right;
+                this.movePlayerRight();
+            }
+    
+            else if ((this.playerMovement.currentMovement === Movement.JumpLeft || this.playerMovement.currentMovement === Movement.JumpRight) && this.body.blocked.down) {
+                this.startJump(this.playerMovement.currentMovement);
+            }
+    
+            else if (this.playerMovement.currentMovement === Movement.IdleLeft || this.playerMovement.currentMovement === Movement.IdleRight) {
+                    this.idle(this.playerMovement.currentMovement);
+                }  
         }
-
-        else if (this.currentMovement === Movement.Left) {
-            this.currentMovement = Movement.Left;
-            this.movePlayerLeft();
-        }
-
-        else if (this.currentMovement === Movement.Right) {
-            this.currentMovement = Movement.Right;
-            this.movePlayerRight();
-        }
-
-        else if ((this.currentMovement === Movement.JumpLeft || this.currentMovement === Movement.JumpRight) && this.body.blocked.down) {
-            this.startJump(this.currentMovement);
-        }
-
-        else if (this.currentMovement === Movement.IdleLeft || this.currentMovement === Movement.IdleRight) {
-                this.idle(this.currentMovement);
-            }  
     }
 }
