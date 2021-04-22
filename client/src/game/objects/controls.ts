@@ -32,35 +32,31 @@ export default class Controls {
 
     public checkControls() {
         this.previousMovement = this.currentMovement;
-
-        // if (this.keys.left.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-        //     this.currentMovement = Movement.SideJumpLeft;
-
-        //     this.player.sideJump(this.currentMovement);
-            
-
-        // }
-
-        // else if (this.keys.right.isDown && this.keys.up.isDown && this.player.body.blocked.down) {
-        //     this.currentMovement = Movement.SideJumpRight;
-            
-        //     this.player.sideJump(this.currentMovement);
-
-
-        // }
-
+        
         if (this.keys.left.isDown) {
-            this.currentMovement = Movement.Left;
+            if (this.keys.up.isUp) {
+                this.currentMovement = Movement.Left;
+                this.emitKeyPressed();
+            }
 
-            this.player.movePlayerLeft();
+            if (this.keys.up.isDown && this.player.body.blocked.down) {
+                this.currentMovement = Movement.SideJumpLeft;
+                this.emitKeyPressed();
+            }
+
+            
 
         }
-
         else if (this.keys.right.isDown) {
-            this.currentMovement = Movement.Right;
+            if (this.keys.up.isUp) {
+                this.currentMovement = Movement.Right;
+                this.emitKeyPressed();
+            }
 
-            this.player.movePlayerRight();
-
+            if (this.keys.up.isDown) {
+                this.currentMovement = Movement.SideJumpRight;
+                this.emitKeyPressed();
+            }
         }
 
         else if (this.keys.up.isDown && this.player.body.blocked.down) {
@@ -72,25 +68,21 @@ export default class Controls {
                 this.currentMovement = Movement.JumpRight;
             }
 
-            this.player.startJump(this.currentMovement);
-
+            this.emitKeyPressed();
         }
 
         else {
 
             if (this.currentMovement === Movement.Left || this.currentMovement === Movement.SideJumpLeft || this.currentMovement === Movement.JumpLeft || this.currentMovement === Movement.IdleLeft) {
                 this.currentMovement = Movement.IdleLeft
-            }
+                this.emitKeyPressed();
+            } 
 
             else if (this.currentMovement === Movement.Right || this.currentMovement === Movement.SideJumpRight || this.currentMovement === Movement.JumpRight || this.currentMovement === Movement.IdleRight) {
                 this.currentMovement = Movement.IdleRight
+                this.emitKeyPressed();
             }
-
-            this.player.idle(this.currentMovement);
-
-        }
-        this.emitKeyPressed();
-
+        }    
     }
 
     private emitKeyPressed() {
@@ -99,7 +91,8 @@ export default class Controls {
             playerMovement : {
                 x: this.player.x, 
                 y: this.player.y,
-                currentMovement: this.currentMovement
+                currentMovement: this.currentMovement,
+                previousMovement: this.previousMovement
             }
         };
 

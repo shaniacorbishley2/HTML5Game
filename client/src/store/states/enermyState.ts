@@ -1,4 +1,3 @@
-import Enermy from "../../game/objects/enermy/enermy";
 import IEnermyState from './interfaces/enermyState.d';
 
 export default class EnermyState implements IEnermyState {
@@ -8,5 +7,5 @@ export default class EnermyState implements IEnermyState {
                                                                         collideWorldBounds: true,
                                                                         immovable: true
                                                                     }
-    public enermyObjects: Enermy[] = [];
+    public enermyObjects: Phaser.GameObjects.Image[] = [];
 }

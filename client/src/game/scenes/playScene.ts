@@ -2,7 +2,6 @@ import { Scene } from 'phaser';
 import Player from '../objects/player/player';
 import { io, Socket } from 'socket.io-client';
 import EnermyGroup from '../objects/enermy/enermyGroup';
-import Enermy from '../objects/enermy/enermy';
 import { store } from '../../store';
 import GameObjectConfig from './../objects/interfaces/gameObjectConfig';
 import MainPlayer from '../objects/player/mainPlayer';
@@ -95,13 +94,13 @@ export default class PlayScene extends Scene {
   }
 
   private createEnermies() {
-    const gameObjectConfig: GameObjectConfig = { amount: 5, scene: this, texture: 'bomb' }
+    const gameObjectConfig: GameObjectConfig = { amount: 5, scene: this, texture: 'bomb', x: 0, y: 0 }
 
     const enermyConfig: Phaser.Types.GameObjects.Group.GroupCreateConfig = store.getters['enermyModule/config'];
 
     store.dispatch('enermyModule/submitEnermyObjects', gameObjectConfig);
 
-    const enermyObjects: Enermy[] = store.getters['enermyModule/enermyObjects'];
+    const enermyObjects: Phaser.GameObjects.Image[] = store.getters['enermyModule/enermyObjects'];
 
     this.enermyGroup = new EnermyGroup(this.physics.world, this, enermyConfig, this.randomDataGenerator);
 
@@ -167,7 +166,7 @@ export default class PlayScene extends Scene {
     }
   }
 
-  private removeEnermy(enermy: Enermy) {
+  private removeEnermy(enermy: Phaser.GameObjects.Image) {
     enermy.destroy();
   }
 
@@ -182,7 +181,7 @@ export default class PlayScene extends Scene {
     });
 
     this.socket.on('playerKeyPressed', async (playersInfo: PlayerInfo[]) => {
-      await store.dispatch('playerModule/submitTeamPlayersMovement', playersInfo);
+      await store.dispatch('playerModule/submitPlayersMovement', playersInfo);
     });
 
     this.socket.on('playerLocation', (playersInfo: PlayerInfo[]) => {
@@ -191,10 +190,10 @@ export default class PlayScene extends Scene {
   }
 
   private checkTeamPlayersMovement() {
-    const teamPlayers: TeamPlayer[] = store.getters['playerModule/teamPlayers'];
-    if (teamPlayers) {
+    const players: Player[] = store.getters['playerModule/players'];
+    if (players) {
 
-      teamPlayers.forEach((player: TeamPlayer) => {
+      players.forEach((player: Player) => {
           // Loop through movement 
           player.checkPlayerMovement();
   
@@ -204,7 +203,7 @@ export default class PlayScene extends Scene {
 
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
     const player = <Player>obj1;
-    const enermy = <Enermy>obj2;
+    const enermy = <Phaser.GameObjects.Image>obj2;
 
     player.playerHit();
     this.removeEnermy(enermy);

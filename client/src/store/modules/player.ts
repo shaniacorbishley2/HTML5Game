@@ -71,18 +71,21 @@ export const mutations: MutationTree<IPlayerState> = {
             state.teamPlayers.push(teamPlayer);
         }
     },
-    teamPlayersMovement: (state: IPlayerState, playersInfo: PlayerInfo[]) => {
-        state.teamPlayers.forEach((teamPlayer: TeamPlayer) => {
-            const matchingPlayer = playersInfo.find((player) => teamPlayer.playerId === player.playerId);
+    playersMovement: (state: IPlayerState, playersInfo: PlayerInfo[]) => {
+        state.players.forEach((player: Player) => {
+            const matchingPlayer = playersInfo.find((playerInfo) => player.playerId === playerInfo.playerId);
 
             if (matchingPlayer && matchingPlayer.playerMovement) {
-                teamPlayer.movement = matchingPlayer.playerMovement.currentMovement;
-                if (teamPlayer.x !== matchingPlayer.playerMovement.x) {
-                    teamPlayer.setX(matchingPlayer.playerMovement.x);
+
+                player.currentMovement = matchingPlayer.playerMovement.currentMovement;
+                player.previousMovement = matchingPlayer.playerMovement.previousMovement;
+
+                if (player.x !== matchingPlayer.playerMovement.x) {
+                    player.setX(matchingPlayer.playerMovement.x);
                     console.log('testX');
                 }
-                if (teamPlayer.y !== matchingPlayer.playerMovement.y) {
-                    teamPlayer.setY(matchingPlayer.playerMovement.y);
+                if (player.y !== matchingPlayer.playerMovement.y) {
+                    player.setY(matchingPlayer.playerMovement.y);
                 }
             }
         });
@@ -111,8 +114,8 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
     submitAddTeamPlayer({ commit }, teamPlayer: TeamPlayer) {
         commit('addTeamPlayer', teamPlayer);
     },
-    submitTeamPlayersMovement({ commit }, playersInfo: PlayerInfo[]) {
-        commit('teamPlayersMovement', playersInfo);
+    submitPlayersMovement({ commit }, playersInfo: PlayerInfo[]) {
+        commit('playersMovement', playersInfo);
     }
 };
 

@@ -7,6 +7,10 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
 
     public playerHealth: number = 100;
 
+    public currentMovement: Movement | null = Movement.None;
+
+    public previousMovement: Movement | null = Movement.None;
+
     private moveVelocity: number = 60;
 
     private jumpVelocity: number = -150;
@@ -57,11 +61,22 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         
     }
 
+    public endJump() {
+        this.setVelocityY(0);
+    }
+
     // Jump to the side
-    public sideJump(direction: Movement) {
+    public sideJumpRight() {
         this.setVelocityY(this.jumpVelocity);
-        this.setVelocityX(direction === Movement.SideJumpLeft ? -50 : 50);
-        direction === Movement.SideJumpLeft ? this.anims.play('jump-l', true) : this.anims.play('jump-r', true);
+        this.setVelocityX(this.moveVelocity);
+        this.anims.play('jump-r', true);
+    }
+
+    public sideJumpLeft() {
+        this.setVelocityY(this.jumpVelocity);
+        this.setVelocityX(-this.moveVelocity);
+        this.anims.play('jump-l', true);
+
     }
 
     // Sets hit box for the player to be exact pixel height
@@ -75,5 +90,33 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
             health: -10
         }
         store.dispatch('playerModule/updateHealth', playerHealth);
+    }
+
+    public checkPlayerMovement() {
+        if (this.currentMovement === Movement.SideJumpLeft && this.body.blocked.down) {
+            this.sideJumpLeft();
+        }
+
+        else if (this.currentMovement === Movement.SideJumpRight && this.body.blocked.down) {
+            this.sideJumpRight();
+        }
+
+        else if (this.currentMovement === Movement.Left) {
+            this.currentMovement = Movement.Left;
+            this.movePlayerLeft();
+        }
+
+        else if (this.currentMovement === Movement.Right) {
+            this.currentMovement = Movement.Right;
+            this.movePlayerRight();
+        }
+
+        else if ((this.currentMovement === Movement.JumpLeft || this.currentMovement === Movement.JumpRight) && this.body.blocked.down) {
+            this.startJump(this.currentMovement);
+        }
+
+        else if (this.currentMovement === Movement.IdleLeft || this.currentMovement === Movement.IdleRight) {
+                this.idle(this.currentMovement);
+            }  
     }
 }

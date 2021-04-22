@@ -27,6 +27,7 @@ export default class MainPlayer extends Player {
         const playerInfo: PlayerInfo = {
             playerId: this.socket.id,
             playerMovement: {
+                previousMovement: Movement.None,
                 currentMovement: Movement.None,
                 x: this.x,
                 y: this.y
@@ -42,7 +43,5 @@ export default class MainPlayer extends Player {
         this.socket.emit('playerLocation', [playerInfo]);
 
         this.addPlayerControls(this);
-
-        //this.socketIds.push(playerId);
     }
 }

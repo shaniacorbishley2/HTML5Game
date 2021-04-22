@@ -32,7 +32,7 @@ export default class GameServer {
 
         this.io.emit('playerKeyPressed', this.players);
 
-        console.log(playerInfo[0].playerId, playerInfo[0].playerMovement.currentMovement, playerInfo[0].playerMovement.x, playerInfo[0].playerMovement.y);
+        console.log(playerInfo[0].playerId, playerInfo[0].playerMovement.previousMovement, playerInfo[0].playerMovement.currentMovement, playerInfo[0].playerMovement.x, playerInfo[0].playerMovement.y);
         //console.log(this.players)
       });
 

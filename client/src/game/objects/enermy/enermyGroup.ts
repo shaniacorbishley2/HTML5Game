@@ -1,4 +1,3 @@
-import Enermy from "./enermy";
 import Phaser from 'phaser';
 export default class EnermyGroup extends Phaser.Physics.Arcade.Group {
     public randomDataGenerator;
@@ -8,7 +7,7 @@ export default class EnermyGroup extends Phaser.Physics.Arcade.Group {
         this.randomDataGenerator = randomDataGenerator;
     }
 
-    public addEnermies(enermies: Enermy[]) {
+    public addEnermies(enermies: Phaser.GameObjects.Image[]) {
         this.addMultiple(enermies, true);
         this.setEnermyVelocity();
         this.children.each((child) => {

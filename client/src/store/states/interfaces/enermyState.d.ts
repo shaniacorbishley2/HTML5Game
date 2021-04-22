@@ -1,8 +1,6 @@
-import Enermy from "../../../game/objects/enermy/enermy";
-
 interface IEnermyState {
     config:  Phaser.Types.Physics.Arcade.PhysicsGroupConfig;
-    enermyObjects: Enermy[]
+    enermyObjects: Phaser.GameObjects.Image[]
 };
 
 export default IEnermyState;
