@@ -36,7 +36,6 @@ export default class PlayScene extends Scene {
   private mainPlayer!: MainPlayer;
 
   public create () {
-
     //SOCKET IO - this would change to a live
     this.socket = io('10.106.101.12:3000');
 
@@ -117,56 +116,41 @@ export default class PlayScene extends Scene {
 
   private createCollisions() {
     this.collisionLayers.forEach((layer) => {
-      const playerCollisions: PlayerCollision = {scene: this, colliderObject: layer};
+      const playerLayerCollisions: PlayerCollision = {scene: this, colliderObject: layer};
 
       this.map.setCollisionBetween(0, 74, true, false, layer);
 
-      store.dispatch('playerModule/submitPlayerCollisions', playerCollisions);
+      store.dispatch('playerModule/submitPlayerCollisions', playerLayerCollisions);
 
       this.physics.add.collider(this.enermyGroup, layer);
       this.physics.add.collider(this.collectableGroup, layer);
     });
 
-    const playerCollisions: PlayerCollision = { scene: this, colliderObject: this.enermyGroup, callback: this.enermyPlayerCollide.bind(this) };
-    store.dispatch('playerModule/submitPlayerCollisions', playerCollisions);
+    const playerEnermyCollisions: PlayerCollision = { scene: this, colliderObject: this.enermyGroup, callback: this.enermyPlayerCollide.bind(this) };
+    store.dispatch('playerModule/submitPlayerCollisions', playerEnermyCollisions);
+
+    const playerCollectableOverlap: PlayerCollision = { scene: this, colliderObject: this.collectableGroup, callback: this.collectablePlayerOverlap.bind(this) };
+    store.dispatch('playerModule/submitPlayerOverlap', playerCollectableOverlap);
   }
 
   private playerConnected(playersInfo: PlayerInfo[]) {
-    const playerIds: string[] = store.getters['playerModule/playerIds'];
-    if (playersInfo.length !== playerIds.length) {
+    const players: Player[] = store.getters['playerModule/players'];
+      if (playersInfo.length !== players.length) {
+          playersInfo.forEach((playerInfo) =>  {
 
-      playersInfo.forEach((element) =>  {
-        if (!playerIds.includes(element.playerId)) {
-
-          this.addPlayer(element);
-          this.createCollisions();
-        }
-      });
-    }
-    
-  }
-
-  // Logic to add another player to the scene
-  private addPlayer(playerInfo: PlayerInfo): Player {
-
-      const player = new Player(this, playerInfo); 
-      // add to the players array
-      store.dispatch('playerModule/submitAddPlayer', player);
-    
-      // Add player to the scene
-      this.add.existing(player);
-
-      return player;
-  }
-
-  private removeEnermy(enermy: Phaser.GameObjects.Image) {
-    enermy.destroy();
+              if (players.find((player) => player.playerId !== playerInfo.playerId)) {
+                const player = new Player(this, playerInfo );
+                
+                store.dispatch('playerModule/submitAddPlayer', player);
+              }
+          });
+      }
   }
 
   private async listeners() {
-    this.socket.on('playerConnected', (playersInfo: PlayerInfo[]) => {
+    this.socket.on('playerConnected', async (playersInfo: PlayerInfo[]) => {
       this.playerConnected(playersInfo);
-      
+      this.createCollisions();
     });
 
     this.socket.on('playerDisconnected', async (playersInfo: PlayerInfo[]) => {
@@ -201,8 +185,18 @@ export default class PlayScene extends Scene {
     const player = <Player>obj1;
     const enermy = <Phaser.GameObjects.Image>obj2;
 
-    player.playerHit();
-    this.removeEnermy(enermy);
+    player.removeHealth();
+    enermy.destroy();
+  }
+
+  private collectablePlayerOverlap(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
+    const player = <Player>obj1;
+    const collectable = <Phaser.GameObjects.Image>obj2;
+
+    if (player.playerHealth < 100) {
+      player.addHealth();
+      collectable.destroy();
+    }
   }
 
   private createCollectables() {

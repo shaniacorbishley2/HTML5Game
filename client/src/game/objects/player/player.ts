@@ -23,14 +23,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.initPlayer();
     }
 
-    private initPlayer() {
-        this.scene.physics.world.enable(this);
-        this.setGravity(0, 5);
-        this.setCollisionBox();
-        this.setCollideWorldBounds(true);
-        this.setImmovable(true);
-    }
-
     // Move player left 
     public movePlayerLeft() {
         this.setVelocityX(-this.moveVelocity);
@@ -67,10 +59,6 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         
     }
 
-    public endJump() {
-        this.setVelocityY(0);
-    }
-
     // Jump to the side
     public sideJumpRight() {
         this.setVelocityY(this.jumpVelocity);
@@ -84,13 +72,8 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         this.anims.play('jump-l', true);
 
     }
-
-    // Sets hit box for the player to be exact pixel height
-    public setCollisionBox() {
-        this.body.setSize(16, 30, true);
-    }
-
-    public playerHit() {
+    
+    public removeHealth() {
         const playerHealth: PlayerHealth = {
             playerId: this.playerId,
             health: -10
@@ -98,17 +81,25 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         store.dispatch('playerModule/submitUpdateHealth', playerHealth);
     }
 
+    public addHealth() {
+        const playerHealth: PlayerHealth = {
+            playerId: this.playerId,
+            health: 10
+        }
+        store.dispatch('playerModule/submitUpdateHealth', playerHealth);
+    }
+    
     public checkPlayerMovement() {
         if (this.playerMovement) {
-
+            
             if (this.playerMovement.currentMovement === Movement.SideJumpLeft && this.body.blocked.down) {
                 this.sideJumpLeft();
             }
-    
+            
             else if (this.playerMovement.currentMovement === Movement.SideJumpRight && this.body.blocked.down) {
                 this.sideJumpRight();
             }
-    
+            
             else if (this.playerMovement.currentMovement === Movement.Left) {
                 this.playerMovement.currentMovement = Movement.Left;
                 this.movePlayerLeft();
@@ -118,14 +109,27 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
                 this.playerMovement.currentMovement = Movement.Right;
                 this.movePlayerRight();
             }
-    
+            
             else if ((this.playerMovement.currentMovement === Movement.JumpLeft || this.playerMovement.currentMovement === Movement.JumpRight) && this.body.blocked.down) {
                 this.startJump(this.playerMovement.currentMovement);
             }
-    
+            
             else if (this.playerMovement.currentMovement === Movement.IdleLeft || this.playerMovement.currentMovement === Movement.IdleRight) {
-                    this.idle(this.playerMovement.currentMovement);
-                }  
+                this.idle(this.playerMovement.currentMovement);
+            }  
         }
+    }
+
+    private initPlayer() {
+        this.scene.physics.world.enable(this);
+        this.setGravity(0, 5);
+        this.setCollisionBox();
+        this.setCollideWorldBounds(true);
+        this.setImmovable(true);
+    }
+
+    // Sets hit box for the player to be exact pixel height
+    private setCollisionBox() {
+        this.body.setSize(16, 30, true);
     }
 }

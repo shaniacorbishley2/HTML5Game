@@ -2,6 +2,7 @@ import PlayerCollision from '@/game/objects/interfaces/playerCollision';
 import PlayerHealth from '@/game/objects/interfaces/playerHealth';
 import PlayerInfo from '@/game/objects/interfaces/playerInfo';
 import Player from '@/game/objects/player/player';
+import PlayScene from '@/game/scenes/playScene';
 import {GetterTree, MutationTree, ActionTree, Module } from 'vuex';
 import  IRootState  from '../states/interfaces';
 import IPlayerState from '../states/interfaces/playerState';
@@ -28,14 +29,14 @@ export const mutations: MutationTree<IPlayerState> = {
     mainPlayerId: (state: IPlayerState, playerId: string) => {
         state.mainPlayerId = playerId;
     },
+    playerDisconnected: ( state: IPlayerState, players: Player[] ) => {
+        state.players = players;
+    },
     addPlayer: (state: IPlayerState, player: Player) => {
         if (!state.players.includes(player)) {
             state.players.push(player);
         }
     },
-    playerDisconnected: ( state: IPlayerState, players: Player[] ) => {
-        state.players = players;
-    }   
 };
 
 export const actions: ActionTree<IPlayerState, IRootState> = {
@@ -49,15 +50,19 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
     submitMainPlayerId({ commit }, playerId: string) {
         commit('mainPlayerId', playerId);
     },
-    submitAddPlayer({ commit}, player: Player) {
-        commit('addPlayer', player);
-    },
     submitPlayerCollisions({}, playerCollision: PlayerCollision ) {
         state.players.forEach((player: Player) => {
             if (playerCollision.callback) {
-                playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject, playerCollision.callback);
+                player.scene.physics.add.collider(player, playerCollision.colliderObject, playerCollision.callback);
             }
-            playerCollision.scene.physics.add.collider(player, playerCollision.colliderObject);
+            player.scene.physics.add.collider(player, playerCollision.colliderObject);
+        });
+    },
+    submitPlayerOverlap({}, playerCollision: PlayerCollision){
+        state.players.forEach((player: Player) => {
+            if (playerCollision.callback) {
+                player.scene.physics.add.overlap(player, playerCollision.colliderObject, playerCollision.callback);
+            }
         });
     },
     submitTeamPlayersLocation({}, playersInfo: PlayerInfo[]) {
@@ -95,6 +100,9 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
                 commit('playerDisconnected', updatedPlayers);
             });
         }
+    },
+    submitAddPlayer({ commit}, player: Player) {
+        commit('addPlayer', player);
     }
 };
 

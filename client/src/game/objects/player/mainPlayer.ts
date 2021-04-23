@@ -45,10 +45,10 @@ export default class MainPlayer extends Player {
         }
         // Create player
         store.dispatch('playerModule/submitMainPlayerId', this.socket.id);
+ 
+        store.dispatch('playerModule/submitAddPlayer', this);
 
         this.scene.add.existing(this);
-        
-        store.dispatch('playerModule/submitAddPlayer', this);
 
         this.socket.emit('playerLocation', [playerInfo]);
 
