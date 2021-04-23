@@ -120,6 +120,20 @@ export default class Player extends Phaser.Physics.Arcade.Sprite {
         }
     }
 
+    public addToScene() {
+        store.dispatch('playerModule/submitAddPlayer', this);
+        this.scene.add.existing(this);
+        
+    
+        // const text = this.add.text(player.x, player.y,'player',{
+        //   fontFamily:'Arial',
+        //   color:'#000000',
+        //   align:'center',
+        // }).setFontSize(18);
+    
+        // this.add.container(200, 49,[player, text]);
+    }
+
     private initPlayer() {
         this.scene.physics.world.enable(this);
         this.setGravity(0, 5);

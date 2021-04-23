@@ -61,6 +61,8 @@ export default class GameServer {
     
       // If there is already one player in the game, we need to call the logic to 'add another player' emit the event on created
 
+    console.log(this.players);
+
     this.io.emit('playerConnected', this.players);
     
     console.log(`player ${playerId} connected`);

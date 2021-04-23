@@ -57,7 +57,7 @@ export default class PlayScene extends Scene {
       this.createCollisions();
       
       // Socket io events
-      await this.listeners();
+      this.listeners();
     });
 
   }
@@ -135,29 +135,33 @@ export default class PlayScene extends Scene {
 
   private playerConnected(playersInfo: PlayerInfo[]) {
     const players: Player[] = store.getters['playerModule/players'];
-      if (playersInfo.length !== players.length) {
-          playersInfo.forEach((playerInfo) =>  {
 
-              if (players.find((player) => player.playerId !== playerInfo.playerId)) {
-                const player = new Player(this, playerInfo );
-                
-                store.dispatch('playerModule/submitAddPlayer', player);
-              }
-          });
-      }
+    if (playersInfo.length !== players.length){
+      playersInfo.forEach((playerInfo) => {
+        const matchingPlayer = players.some((player) => player.playerId === playerInfo.playerId);
+
+        if (!matchingPlayer) {
+          const player = new Player(this, playerInfo );
+          store.dispatch('playerModule/submitAddPlayer', player);
+          player.addToScene();
+        }
+
+      })
+    }
   }
 
-  private async listeners() {
-    this.socket.on('playerConnected', async (playersInfo: PlayerInfo[]) => {
+  private listeners() {
+    this.socket.on('playerConnected', (playersInfo: PlayerInfo[]) => {
       this.playerConnected(playersInfo);
       this.createCollisions();
     });
 
-    this.socket.on('playerDisconnected', async (playersInfo: PlayerInfo[]) => {
-      await store.dispatch('playerModule/submitPlayerDisconnected', playersInfo);
+    this.socket.on('playerDisconnected', (playersInfo: PlayerInfo[]) => {
+
+      store.dispatch('playerModule/submitPlayerDisconnected', playersInfo);
     });
 
-    this.socket.on('playerKeyPressed', async (playersInfo: PlayerInfo[]) => {
+    this.socket.on('playerKeyPressed', (playersInfo: PlayerInfo[]) => {
       store.dispatch('playerModule/submitPlayersMovement', playersInfo);
     });
 
@@ -167,16 +171,14 @@ export default class PlayScene extends Scene {
   }
 
   private checkPlayersMovement() {
-    const players: MainPlayer[] = store.getters['playerModule/players'];
+    const players: Player[] = store.getters['playerModule/players'];
 
     if (players && players.length > 0) {
       players.forEach((player) => {
           if (player !== undefined) {
 
             player.checkPlayerMovement();
-          }
-          // Loop through movement 
-  
+          }  
       });
     }
   }

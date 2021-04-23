@@ -66,38 +66,50 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
         });
     },
     submitTeamPlayersLocation({}, playersInfo: PlayerInfo[]) {
-        state.players.forEach((player: Player) => {
-            const matchingPlayer = playersInfo.find((playerInfo) => player.playerId === playerInfo.playerId);
+        if (state.players.length === playersInfo.length) {
 
-            if (matchingPlayer && matchingPlayer.playerMovement && player.playerMovement && matchingPlayer.playerId !== state.mainPlayerId) {
-                
-                player.setX(matchingPlayer.playerMovement.x);
-                player.setY(matchingPlayer.playerMovement.y); 
-            }
-        });
+            playersInfo.forEach((playerInfo: PlayerInfo) => {
+                const matchingPlayer = state.players.find((player: Player) => player.playerId === playerInfo.playerId);
+    
+                if (matchingPlayer && matchingPlayer.playerId !== state.mainPlayerId && (matchingPlayer.x !== playerInfo.playerMovement.x || matchingPlayer.y !== playerInfo.playerMovement.y)) {
+                    matchingPlayer.setX(playerInfo.playerMovement.x);
+                    matchingPlayer.setY(playerInfo.playerMovement.y); 
+                }
+            });
+        }
     },
     submitPlayersMovement({}, playersInfo: PlayerInfo[]) {
-        state.players.forEach((player: Player) => {
-            const matchingPlayer = playersInfo.find((playerInfo) => player.playerId === playerInfo.playerId);
+        if (state.players.length === playersInfo.length) {
 
-            if (matchingPlayer && matchingPlayer.playerMovement && player.playerMovement) {
+            playersInfo.forEach((playerInfo: PlayerInfo) => {
+                const matchingPlayer: Player = state.players.find((player: Player) => player.playerId === playerInfo.playerId);
 
-                player.playerMovement.currentMovement = matchingPlayer.playerMovement.currentMovement;
-                player.playerMovement.previousMovement = matchingPlayer.playerMovement.previousMovement;
-            }
-        });
+                if (matchingPlayer && (matchingPlayer.playerMovement.currentMovement.valueOf() !== playerInfo.playerMovement.currentMovement.valueOf() || matchingPlayer.playerMovement.previousMovement.valueOf() !== playerInfo.playerMovement.previousMovement.valueOf())) {
+
+                    matchingPlayer.playerMovement.currentMovement = playerInfo.playerMovement.currentMovement;
+                    matchingPlayer.playerMovement.previousMovement = playerInfo.playerMovement.previousMovement;
+
+                    if (matchingPlayer && matchingPlayer.playerId !== state.mainPlayerId && (matchingPlayer.x !== playerInfo.playerMovement.x || matchingPlayer.y !== playerInfo.playerMovement.y)) {
+                        matchingPlayer.setX(playerInfo.playerMovement.x);
+                        matchingPlayer.setY(playerInfo.playerMovement.y); 
+                    }
+                }
+            });
+        }
     },
     submitPlayerDisconnected({ commit }, playersInfo: PlayerInfo[]) {
         if (playersInfo.length !== state.players.length) {
-            playersInfo.forEach((playerInfo: PlayerInfo) =>  {
-                const updatedPlayers: Player[] = state.players.filter((player) => {
-                    if (player.playerId !== playerInfo.playerId) {
-                        player.destroy();
-                    }
-                    return player.playerId === playerInfo.playerId;
-                });
+            const matchingPlayers: Player[] = [];
+            state.players.forEach((player: Player) =>  {
+                const matchingPlayer = playersInfo.some((playerInfo: PlayerInfo) => playerInfo.playerId === player.playerId);
 
-                commit('playerDisconnected', updatedPlayers);
+                if (matchingPlayer) {
+                    matchingPlayers.push(player);
+                }
+                else {
+                    player.destroy();
+                }
+                commit('playerDisconnected', matchingPlayers);
             });
         }
     },
