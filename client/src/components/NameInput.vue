@@ -19,7 +19,6 @@ export default class NameInput extends Vue {
     }
 
     public set playerName(value: string) {
-        console.log('value' + value);
         this.$store.dispatch('playerModule/submitPlayerName', value);
     }
 
@@ -33,10 +32,8 @@ export default class NameInput extends Vue {
 
     public showNameInput() {
         if (this.scene && this.scene.scene.isActive('mainMenuScene')) {
-            console.log('true');
             return true;
         }
-        console.log('false');
         return false;
     }
 

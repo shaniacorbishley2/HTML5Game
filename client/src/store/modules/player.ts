@@ -123,7 +123,6 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
         commit('addScene', scene);
     },
     submitPlayerName({ commit }, playerName: string) {
-        console.log(playerName);
         commit('playerName', playerName);
     }
 };

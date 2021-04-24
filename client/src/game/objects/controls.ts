@@ -98,8 +98,6 @@ export default class Controls {
                 }
             };
 
-            console.log(playerInfo);
-
             if (this.currentMovement !== this.previousMovement) {
                 this.socket.emit('playerKeyPressed', [playerInfo]);
             }

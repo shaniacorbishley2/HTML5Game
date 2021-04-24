@@ -55,7 +55,6 @@ export default class PlayScene extends Scene {
     const player = new Player(this, this.socket.id);
 
     const playerName: string = store.getters['playerModule/playerName'];
-    console.log(playerName);
 
     const text = new PlayerText(this, playerName);
 
@@ -154,7 +153,6 @@ export default class PlayScene extends Scene {
 
   private playerConnected(playersInfo: PlayerInfo[]) {
     const players: PlayerContainer[] = store.getters['playerModule/players'];
-    console.log(players);
     if (playersInfo.length !== players.length){
       playersInfo.forEach((playerInfo: PlayerInfo) => {
         const matchingPlayer = players.some((playerContainer: PlayerContainer) => playerContainer.playerInfo.playerId === playerInfo.playerId);
