@@ -2,6 +2,7 @@ import express from 'express';
 import http from 'http';
 import { Server, Socket } from 'socket.io';
 import Movement from './enums/movement';
+import PlayerHealth from './interfaces/playerHealth';
 import PlayerInfo from './interfaces/playerInfo';
 export default class GameServer {
   private app = express();
@@ -9,6 +10,8 @@ export default class GameServer {
   private server: http.Server = http.createServer(this.app);
 
   private players: PlayerInfo[] = [];
+
+  private gameStarted: boolean = false;
 
   private io: Server = new Server(this.server, {
     cors: {
@@ -24,6 +27,10 @@ export default class GameServer {
     this.io.on('connection',  (socket: Socket) => {
       socket.on('playerConnected', () => {
         this.playerConnected(socket.id);
+        if (this.players.length > 1) {
+
+          this.gameStartTimer();
+        }
       });
 
       socket.on('disconnect', () => {
@@ -44,6 +51,9 @@ export default class GameServer {
         this.io.emit('playerLocation', this.players);
       });
 
+      socket.on('playerHit', (playerInfo: PlayerInfo[]) => {
+        this.playerHit(playerInfo[0]);
+      });
     });
   }
 
@@ -54,21 +64,23 @@ export default class GameServer {
 
     // Else let the player join
     // If there is only one player then continue as normal
-    this.players.push({playerId: playerId, playerMovement: {
-      currentMovement: Movement.None,
-      previousMovement: Movement.None,
-      x: 0,
-      y: 0
-    }});
+    this.players.push({playerId: playerId, 
+      playerMovement: {
+        currentMovement: Movement.None,
+        previousMovement: Movement.None,
+        x: 0,
+        y: 0
+      },
+      health: 100 });
     
       // If there is already one player in the game, we need to call the logic to 'add another player' emit the event on created
 
-    console.log(this.players);
+    // console.log(this.players);
 
     this.io.emit('playerConnected', this.players);
     
-    console.log(`player ${playerId} connected`);
-    console.log(`there are ${this.players.length} players`);
+    // console.log(`player ${playerId} connected`);
+    // console.log(`there are ${this.players.length} players`);
   }
 
   private playerDisconnect(playerId: string) {
@@ -89,5 +101,49 @@ export default class GameServer {
 
     });
   }
+
+  private gameStartTimer() {
+    let timeLeft = 10;
+    
+    const timer = setInterval(() => {
+      if (timeLeft == -1) {
+        clearTimeout(timer);
+        console.log('times up!');
+        this.io.emit('gameStarted');
+        this.gameStarted = true;
+      } else {
+        this.io.emit('startGameTimer', [timeLeft]);
+        console.log(timeLeft + ' seconds remaining');
+        timeLeft--;
+      }
+    }, 1000);
+  }
+
+  private playerHit(playerInfo: PlayerInfo) {
+    let playerHealth: PlayerHealth;
+    this.players.find((player: PlayerInfo) => {
+      if (player.playerId === playerInfo.playerId) {
+          player.health -= 10;
+
+          playerHealth = {
+            playerId: player.playerId,
+            health: player.health
+          };
+          console.log('player hit', player.playerId, 'new health:', player.health);
+          this.io.emit('updatePlayerHealth', [playerHealth]);
+      }
+    });
+  }
+
+  private playerHealthGained(playerInfo: PlayerInfo) {
+    this.players.find((player: PlayerInfo, index) => {
+      if (player.playerId === playerInfo.playerId) {
+          this.players[index].health += 10;
+      }
+    });
+
+  }
+
+
 
 }

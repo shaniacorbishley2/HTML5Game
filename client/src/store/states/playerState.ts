@@ -1,4 +1,3 @@
-import Player from '@/game/objects/player/player';
 import PlayerContainer from '@/game/objects/player/playerContainer';
 import IPlayerState from './interfaces/playerState.d';
 

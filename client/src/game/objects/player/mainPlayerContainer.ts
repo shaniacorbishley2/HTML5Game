@@ -4,7 +4,6 @@ import { store } from '../../../store';
 import Phaser from 'phaser';
 import PlayerInfo from "../interfaces/playerInfo";
 import Movement from "../enums/movement";
-import Player from "./player";
 import PlayerContainer from "./playerContainer";
 
 export default class MainPlayerContainer extends PlayerContainer {
@@ -12,7 +11,7 @@ export default class MainPlayerContainer extends PlayerContainer {
 
     private socket: Socket;
 
-    constructor (scene: Phaser.Scene, socket: Socket, player: Player, text: Phaser.GameObjects.Text, playerInfo: PlayerInfo ) {
+    constructor (scene: Phaser.Scene, socket: Socket, player: Phaser.GameObjects.Sprite, text: Phaser.GameObjects.BitmapText, playerInfo: PlayerInfo ) {
         super(scene, player, text, playerInfo);
         this.socket = socket;
         this.initMainPlayer();
@@ -32,7 +31,8 @@ export default class MainPlayerContainer extends PlayerContainer {
                 currentMovement: Movement.None,
                 x: this.x,
                 y: this.y
-            }
+            },
+            health: 100
         }
         // Create player
         store.dispatch('playerModule/submitMainPlayerId', this.socket.id);

@@ -1,18 +1,17 @@
 import Movement from "../enums/movement";
 import PlayerInfo from "../interfaces/playerInfo";
-import Player from "./player";
-
 export default class PlayerContainer extends Phaser.GameObjects.Container {
 
-    public player: Player;
     
     public playerInfo: PlayerInfo;
+
+    private player: Phaser.GameObjects.Sprite;
 
     private moveVelocity: number = 60;
 
     private jumpVelocity: number = -170;
 
-    constructor (scene: Phaser.Scene, player: Player, text: Phaser.GameObjects.Text, playerInfo: PlayerInfo) {
+    constructor (scene: Phaser.Scene, player: Phaser.GameObjects.Sprite, text: Phaser.GameObjects.BitmapText, playerInfo: PlayerInfo) {
         super(scene, 340, 49, [player, text]);
         this.scene = scene;
         this.player = player;
@@ -23,7 +22,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     public movePlayerLeft() {
         if (this.body instanceof Phaser.Physics.Arcade.Body) {
             this.body.setVelocityX(-this.moveVelocity);
-            this.player.movePlayerLeftAnims();
+            this.player.anims.play('walk-l', true);
         }
     }
 
@@ -31,7 +30,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     public movePlayerRight() {
         if (this.body instanceof Phaser.Physics.Arcade.Body) {
             this.body.setVelocityX(this.moveVelocity);
-            this.player.movePlayerRightAnims();
+            this.player.anims.play('walk-r', true);
         }
     }
 
@@ -39,7 +38,12 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     public idle(direction: Movement) {
         if (this.body instanceof Phaser.Physics.Arcade.Body) {
             this.body.setVelocityX(0);
-            this.player.idleAnims(direction);
+            if (direction === Movement.IdleLeft) {
+                this.player.anims.play('idle-l', true);
+            }
+            else if (direction === Movement.IdleRight) {
+                this.player.anims.play('idle-r', true);
+            }
         }
     }
 
@@ -47,7 +51,12 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
     public startJump(direction: Movement) {
         if (this.body instanceof Phaser.Physics.Arcade.Body) {
             this.body.setVelocityY(this.jumpVelocity);  
-            this.player.startJumpAnims(direction);
+            if (direction === Movement.JumpLeft) {
+                this.player.anims.play('jump-l', true);
+            }
+            if (direction === Movement.JumpRight) {
+                this.player.anims.play('jump-r', true);
+            }
         }
     }
 
@@ -56,7 +65,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
         if (this.body instanceof Phaser.Physics.Arcade.Body) {
             this.body.setVelocityY(this.jumpVelocity);
             this.body.setVelocityX(this.moveVelocity);
-            this.player.sideJumpRightAnims();
+            this.player.anims.play('jump-r', true);
         }
     }
 
@@ -64,7 +73,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
         if (this.body instanceof Phaser.Physics.Arcade.Body) {
             this.body.setVelocityY(this.jumpVelocity);
             this.body.setVelocityX(-this.moveVelocity);
-            this.player.sideJumpLeftAnims();
+            this.player.anims.play('jump-l', true);
         }
 
     }
@@ -106,7 +115,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
 
     private initPlayerContainer() {
         this.scene.physics.world.enableBody(this);
-        if (this.playerInfo.playerMovement && this.body instanceof Phaser.Physics.Arcade.Body) {
+        if (this.body instanceof Phaser.Physics.Arcade.Body) {
             this.body.setGravity(0, 5);
             this.body.setSize(16, 30, true);
             this.body.setCollideWorldBounds(true);

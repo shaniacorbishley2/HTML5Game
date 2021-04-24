@@ -11,6 +11,8 @@ export default class BootScene extends Scene {
   public preload () {
     store.dispatch('playerModule/submitAddScene', this);
 
+    this.load.bitmapFont('minecraft', 'assets/minecraft.png', 'assets/minecraft.xml');
+
     // Character
     this.load.aseprite('bear', 'assets/bear-sprite.png', 'assets/bear-sprite.json');
 

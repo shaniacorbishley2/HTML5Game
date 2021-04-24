@@ -24,11 +24,9 @@ export default class Game extends Vue {
     
   async mounted() {
     const game = await import(/* webpackChunkName: "game" */ '../game/game');
-    const canvas: HTMLCanvasElement = document.createElement('canvas');
-    canvas.id = "test";
     this.downloaded = true;
     this.$nextTick(() => {
-      this.gameInstance = game.launch(this.containerId, canvas)
+      this.gameInstance = game.launch(this.containerId)
     })
   }
 

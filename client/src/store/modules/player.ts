@@ -14,7 +14,7 @@ export const getters: GetterTree<IPlayerState, IRootState> = {
     players: (state: IPlayerState) => state.players,
     mainPlayerHealth: (state: IPlayerState) => {
         const playerContainer = state.players.find((playerContainer: PlayerContainer) => playerContainer.playerInfo.playerId === state.mainPlayerId);
-        return playerContainer ? playerContainer.player.playerHealth : 0;
+        return playerContainer ? playerContainer.playerInfo.health : 0;
     },
     scene: (state: IPlayerState) => state.scene,
     playerName: (state:IPlayerState) => state.playerName
@@ -41,13 +41,6 @@ export const mutations: MutationTree<IPlayerState> = {
 };
 
 export const actions: ActionTree<IPlayerState, IRootState> = {
-    submitUpdateHealth({}, playerHealth: PlayerHealth) {
-        state.players.find((playerContainer: PlayerContainer, index) => {
-            if (playerContainer.playerInfo.playerId == playerHealth.playerId) {
-                state.players[index].player.playerHealth += playerHealth.health;
-            }
-        });
-    },
     submitMainPlayerId({ commit }, playerId: string) {
         commit('mainPlayerId', playerId);
     },
@@ -93,7 +86,7 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
                     
                     if (matchingPlayer && matchingPlayer.playerInfo.playerId !== state.mainPlayerId && (matchingPlayer.x !== playerInfo.playerMovement.x || matchingPlayer.y !== playerInfo.playerMovement.y)) {
                         matchingPlayer.setX(playerInfo.playerMovement.x);
-                        matchingPlayer.setY( playerInfo.playerMovement.y);
+                        matchingPlayer.setY(playerInfo.playerMovement.y);
                     }
                     
                 }
@@ -124,7 +117,14 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
     },
     submitPlayerName({ commit }, playerName: string) {
         commit('playerName', playerName);
-    }
+    },
+    submitUpdatePlayerHealth({}, playerHealth: PlayerHealth) {
+        state.players.find((player: PlayerContainer) => {
+            if (player.playerInfo.playerId === playerHealth.playerId) {
+                player.playerInfo.health = playerHealth.health;
+            }
+        });
+    }   
 };
 
 export const playerModule: Module<IPlayerState, IRootState> = {

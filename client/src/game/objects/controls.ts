@@ -95,7 +95,8 @@ export default class Controls {
                     y: this.mainPlayerContainer.y,
                     currentMovement: this.currentMovement,
                     previousMovement: this.previousMovement
-                }
+                },
+                health: this.mainPlayerContainer.playerInfo.health
             };
 
             if (this.currentMovement !== this.previousMovement) {

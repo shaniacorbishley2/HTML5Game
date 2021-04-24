@@ -1,4 +1,3 @@
-import Player from "@/game/objects/player";
 import PlayerContainer from "@/game/objects/player/playerContainer";
 interface IPlayerState {
     players: PlayerContainer[];

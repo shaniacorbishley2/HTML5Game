@@ -4,7 +4,7 @@ import MainMenuScene from './scenes/mainMenuScene';
 import PlayScene from './scenes/playScene';
 
 
-function launch(containerId: any, canvas: HTMLCanvasElement) {
+function launch(containerId: any) {
   return new Phaser.Game({
     type: Phaser.AUTO,
     width: 640,

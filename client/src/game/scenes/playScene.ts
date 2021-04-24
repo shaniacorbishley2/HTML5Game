@@ -7,10 +7,10 @@ import PlayerCollision from '../objects/interfaces/playerCollision';
 import PlayerInfo from '../objects/interfaces/playerInfo';
 import CollectableGroup from '../objects/collectable/collectableGroup';
 import PlayerContainer from '../objects/player/playerContainer';
-import Player from '../objects/player/player';
 import MainPlayerContainer from '../objects/player/mainPlayerContainer';
 import Movement from '../objects/enums/movement';
 import PlayerText from '../objects/player/playerText';
+import PlayerHealth from '../objects/interfaces/playerHealth';
 
 export default class PlayScene extends Scene {
   constructor () {
@@ -37,43 +37,23 @@ export default class PlayScene extends Scene {
 
   private mainPlayerContainer!: MainPlayerContainer;
 
+  private startTimer: number = 0;
+
+  private gameTimerText!: Phaser.GameObjects.BitmapText;
+
   public init(data: any) {
     this.socket = data.socket;
   }
 
   public create () {
-    store.dispatch('playerModule/submitAddScene', this);
-
-    this.socket.emit('playerConnected');
-    
-    this.scale.lockOrientation('landscape');
-
-    console.log(this.socket.id);
+    this.initScene();
 
     this.initMap();
-
-    const player = new Player(this, this.socket.id);
-
-    const playerName: string = store.getters['playerModule/playerName'];
-
-    const text = new PlayerText(this, playerName);
-
-    this.mainPlayerContainer = new MainPlayerContainer(this, this.socket, player, text, {
-      playerId: this.socket.id,
-      playerMovement: {
-        currentMovement: Movement.None,
-        previousMovement: Movement.None,
-        x: 0,
-        y: 0
-      }
-    });
-
-    this.createEnermies();
-
-    this.createCollectables();
+    
+    this.createMainPlayerContainer();
 
     // Collisions between player/layer enermy etc
-    this.createCollisions();
+    this.createLayerCollisions();
     
     // Socket io events
     this.listeners();
@@ -86,6 +66,20 @@ export default class PlayScene extends Scene {
     }
 
     this.checkPlayersMovement();
+  }
+
+  private initScene() {
+    store.dispatch('playerModule/submitAddScene', this);
+
+    this.socket.emit('playerConnected');
+    
+    this.scale.lockOrientation('landscape');
+
+    this.gameTimerText = this.add.bitmapText(480, 5, 'minecraft', 'Waiting for players...').setDepth(5);
+
+    this.add.existing(this.gameTimerText);
+
+    console.log(this.socket.id);
   }
 
   // Init all layers
@@ -132,13 +126,18 @@ export default class PlayScene extends Scene {
     this.enermyGroup.addEnermies(enermyObjects); 
   }
 
-  private createCollisions() {
+  private createLayerCollisions() {
     this.collisionLayers.forEach((layer) => {
       const playerLayerCollisions: PlayerCollision = {scene: this, colliderObject: layer};
 
       this.map.setCollisionBetween(0, 74, true, false, layer);
 
       store.dispatch('playerModule/submitPlayerCollisions', playerLayerCollisions);
+    });
+  }
+
+  private createGameObjectCollisions() {
+    this.collisionLayers.forEach((layer) => {
 
       this.physics.add.collider(this.enermyGroup, layer);
       this.physics.add.collider(this.collectableGroup, layer);
@@ -158,7 +157,7 @@ export default class PlayScene extends Scene {
         const matchingPlayer = players.some((playerContainer: PlayerContainer) => playerContainer.playerInfo.playerId === playerInfo.playerId);
 
         if (!matchingPlayer) {
-          const player = new Player(this, playerInfo.playerId);
+          const player = new Phaser.GameObjects.Sprite(this, 0, -1, 'bear').setOrigin(0.25, 0);
 
           const text = new PlayerText(this, 'player');
 
@@ -174,9 +173,15 @@ export default class PlayScene extends Scene {
   }
 
   private listeners() {
+    this.socket.on('startGameTimer', (startTimer: number[]) => {
+      this.startTimer = startTimer[0];
+      this.gameTimerText.setText(`Game starting in... ${this.startTimer}s`);
+      console.log(this.startTimer);
+    });
+
     this.socket.on('playerConnected', (playersInfo: PlayerInfo[]) => {
       this.playerConnected(playersInfo);
-      this.createCollisions();
+      this.createLayerCollisions();
     });
 
     this.socket.on('playerDisconnected', (playersInfo: PlayerInfo[]) => {
@@ -190,6 +195,16 @@ export default class PlayScene extends Scene {
 
     this.socket.on('playerLocation', (playersInfo: PlayerInfo[]) => {
       store.dispatch('playerModule/submitTeamPlayersLocation', playersInfo);
+    });
+
+    this.socket.on('updatePlayerHealth', (playerHealth: PlayerHealth[]) => {
+      store.dispatch('playerModule/submitUpdatePlayerHealth', playerHealth[0]);
+    });
+
+    this.socket.on('gameStarted', () => {
+      this.createEnermies();
+      this.createCollectables();
+      this.createGameObjectCollisions();
     });
   }
 
@@ -210,7 +225,9 @@ export default class PlayScene extends Scene {
     const playerContainer = <PlayerContainer>obj1;
     const enermy = <Phaser.GameObjects.Image>obj2;
 
-    playerContainer.player.removeHealth();
+    this.socket.emit('playerHit', [playerContainer.playerInfo]);
+
+    // playerContainer.removeHealth();
     enermy.destroy();
   }
 
@@ -218,8 +235,10 @@ export default class PlayScene extends Scene {
     const playerContainer = <PlayerContainer>obj1;
     const collectable = <Phaser.GameObjects.Image>obj2;
 
-    if (playerContainer.player.playerHealth < 100) {
-      playerContainer.player.addHealth();
+    this.socket.emit('playerHealthGained', [playerContainer.playerInfo]);
+
+    if (playerContainer.playerInfo.health < 100) {
+      // playerContainer.addHealth();
       collectable.destroy();
     }
   }
@@ -238,5 +257,24 @@ export default class PlayScene extends Scene {
     this.collectableGroup = new CollectableGroup(this.physics.world, this, collectableConfig, this.randomDataGenerator);
 
     this.collectableGroup.addCollectables(collectableObjects); 
+  }
+
+  private createMainPlayerContainer() {
+    const player = new Phaser.GameObjects.Sprite(this, 0, -1, 'bear').setOrigin(0.25, 0);
+
+    const playerName: string = store.getters['playerModule/playerName'];
+
+    const text = new PlayerText(this, playerName);
+
+    this.mainPlayerContainer = new MainPlayerContainer(this, this.socket, player, text, {
+      playerId: this.socket.id,
+      playerMovement: {
+        currentMovement: Movement.None,
+        previousMovement: Movement.None,
+        x: 0,
+        y: 0
+      },
+      health: 100
+    });
   }
 }
