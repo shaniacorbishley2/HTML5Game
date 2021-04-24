@@ -1,6 +1,6 @@
 <template>
   <div class="main" :id="containerId" v-if="downloaded">
-    <HealthBar/>
+    <NameInput/>
   </div>
   <div class="main" v-else>
     Downloading ...
@@ -10,10 +10,12 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import HealthBar from './HealthBar.vue';
+import NameInput from './NameInput.vue';
 
 @Component({
-  components: { HealthBar }
+  components: { 
+    NameInput
+    }
 })
 export default class Game extends Vue {
   public downloaded: boolean = false;
@@ -22,9 +24,11 @@ export default class Game extends Vue {
     
   async mounted() {
     const game = await import(/* webpackChunkName: "game" */ '../game/game');
+    const canvas: HTMLCanvasElement = document.createElement('canvas');
+    canvas.id = "test";
     this.downloaded = true;
     this.$nextTick(() => {
-      this.gameInstance = game.launch(this.containerId)
+      this.gameInstance = game.launch(this.containerId, canvas)
     })
   }
 

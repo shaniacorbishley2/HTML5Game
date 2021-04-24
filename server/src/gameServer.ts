@@ -22,7 +22,9 @@ export default class GameServer {
     });
 
     this.io.on('connection',  (socket: Socket) => {
-      this.playerConnected(socket.id);
+      socket.on('playerConnected', () => {
+        this.playerConnected(socket.id);
+      });
 
       socket.on('disconnect', () => {
         this.playerDisconnect(socket.id);

@@ -1,28 +1,19 @@
-import Controls from "./../controls";
+import Controls from "../controls";
 import { Socket } from 'socket.io-client';
 import { store } from '../../../store';
 import Phaser from 'phaser';
 import PlayerInfo from "../interfaces/playerInfo";
 import Movement from "../enums/movement";
 import Player from "./player";
+import PlayerContainer from "./playerContainer";
 
-export default class MainPlayer extends Player {
+export default class MainPlayerContainer extends PlayerContainer {
     public controls!: Controls;
 
     private socket: Socket;
 
-    constructor (scene: Phaser.Scene, socket: Socket ) {
-        super(scene, 
-            {
-                playerId: socket.id, 
-                playerMovement:  {
-                    currentMovement: Movement.None,
-                    previousMovement: Movement.None,
-                    x: 0,
-                    y: 0
-                }
-            });
-
+    constructor (scene: Phaser.Scene, socket: Socket, player: Player, text: Phaser.GameObjects.Text, playerInfo: PlayerInfo ) {
+        super(scene, player, text, playerInfo);
         this.socket = socket;
         this.initMainPlayer();
     }

@@ -4,7 +4,7 @@ import MainMenuScene from './scenes/mainMenuScene';
 import PlayScene from './scenes/playScene';
 
 
-function launch(containerId: any) {
+function launch(containerId: any, canvas: HTMLCanvasElement) {
   return new Phaser.Game({
     type: Phaser.AUTO,
     width: 640,
@@ -15,7 +15,8 @@ function launch(containerId: any) {
     },
     scale: {
       mode: Phaser.Scale.FIT,
-      autoCenter: Phaser.Scale.CENTER_BOTH
+      autoCenter: Phaser.Scale.CENTER_BOTH,
+      fullscreenTarget: 'game-container',
     },
     physics: {
       default: 'arcade',

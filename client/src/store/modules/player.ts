@@ -1,8 +1,7 @@
 import PlayerCollision from '@/game/objects/interfaces/playerCollision';
 import PlayerHealth from '@/game/objects/interfaces/playerHealth';
 import PlayerInfo from '@/game/objects/interfaces/playerInfo';
-import Player from '@/game/objects/player/player';
-import PlayScene from '@/game/scenes/playScene';
+import PlayerContainer from '@/game/objects/player/playerContainer';
 import {GetterTree, MutationTree, ActionTree, Module } from 'vuex';
 import  IRootState  from '../states/interfaces';
 import IPlayerState from '../states/interfaces/playerState';
@@ -14,36 +13,38 @@ export const getters: GetterTree<IPlayerState, IRootState> = {
     mainPlayerId: (state: IPlayerState) => state.mainPlayerId,
     players: (state: IPlayerState) => state.players,
     mainPlayerHealth: (state: IPlayerState) => {
-        const player = state.players.find((player: Player) => player.playerId === state.mainPlayerId);
-        return player ? player.playerHealth : 0;
+        const playerContainer = state.players.find((playerContainer: PlayerContainer) => playerContainer.playerInfo.playerId === state.mainPlayerId);
+        return playerContainer ? playerContainer.player.playerHealth : 0;
     },
-    playerIds: () => state.players.map((player) => {
-        return player.playerId;
-    }),
-    teamPlayers: (): Player[] => {
-        return state.players.filter((player: Player) => player.playerId !== state.mainPlayerId);
-    }
+    scene: (state: IPlayerState) => state.scene,
+    playerName: (state:IPlayerState) => state.playerName
 };
 
 export const mutations: MutationTree<IPlayerState> = {
     mainPlayerId: (state: IPlayerState, playerId: string) => {
         state.mainPlayerId = playerId;
     },
-    playerDisconnected: ( state: IPlayerState, players: Player[] ) => {
+    playerDisconnected: ( state: IPlayerState, players: PlayerContainer[] ) => {
         state.players = players;
     },
-    addPlayer: (state: IPlayerState, player: Player) => {
+    addPlayer: (state: IPlayerState, player: PlayerContainer) => {
         if (!state.players.includes(player)) {
             state.players.push(player);
         }
     },
+    addScene: (state: IPlayerState, scene: Phaser.Scene) => {
+        state.scene = scene;
+    },
+    playerName: (state: IPlayerState, playerName: string) => {
+        state.playerName = playerName
+    }
 };
 
 export const actions: ActionTree<IPlayerState, IRootState> = {
     submitUpdateHealth({}, playerHealth: PlayerHealth) {
-        state.players.find((player: Player, index) => {
-            if (player.playerId == playerHealth.playerId) {
-                state.players[index].playerHealth += playerHealth.health;
+        state.players.find((playerContainer: PlayerContainer, index) => {
+            if (playerContainer.playerInfo.playerId == playerHealth.playerId) {
+                state.players[index].player.playerHealth += playerHealth.health;
             }
         });
     },
@@ -51,17 +52,17 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
         commit('mainPlayerId', playerId);
     },
     submitPlayerCollisions({}, playerCollision: PlayerCollision ) {
-        state.players.forEach((player: Player) => {
+        state.players.forEach((playerContainer: PlayerContainer) => {
             if (playerCollision.callback) {
-                player.scene.physics.add.collider(player, playerCollision.colliderObject, playerCollision.callback);
+                playerContainer.scene.physics.add.collider(playerContainer, playerCollision.colliderObject, playerCollision.callback);
             }
-            player.scene.physics.add.collider(player, playerCollision.colliderObject);
+            playerContainer.scene.physics.add.collider(playerContainer, playerCollision.colliderObject);
         });
     },
     submitPlayerOverlap({}, playerCollision: PlayerCollision){
-        state.players.forEach((player: Player) => {
+        state.players.forEach((playerContainer: PlayerContainer) => {
             if (playerCollision.callback) {
-                player.scene.physics.add.overlap(player, playerCollision.colliderObject, playerCollision.callback);
+                playerContainer.scene.physics.add.overlap(playerContainer, playerCollision.colliderObject, playerCollision.callback);
             }
         });
     },
@@ -69,12 +70,13 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
         if (state.players.length === playersInfo.length) {
 
             playersInfo.forEach((playerInfo: PlayerInfo) => {
-                const matchingPlayer = state.players.find((player: Player) => player.playerId === playerInfo.playerId);
-    
-                if (matchingPlayer && matchingPlayer.playerId !== state.mainPlayerId && (matchingPlayer.x !== playerInfo.playerMovement.x || matchingPlayer.y !== playerInfo.playerMovement.y)) {
+                const matchingPlayer: PlayerContainer | undefined = state.players.find((playerContainer: PlayerContainer) => playerContainer.playerInfo.playerId === playerInfo.playerId);
+            
+                if (matchingPlayer && matchingPlayer.playerInfo.playerId !== state.mainPlayerId && (matchingPlayer.x !== playerInfo.playerMovement.x || matchingPlayer.y !== playerInfo.playerMovement.y)) {
                     matchingPlayer.setX(playerInfo.playerMovement.x);
-                    matchingPlayer.setY(playerInfo.playerMovement.y); 
+                    matchingPlayer.setY(playerInfo.playerMovement.y);
                 }
+                
             });
         }
     },
@@ -82,39 +84,47 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
         if (state.players.length === playersInfo.length) {
 
             playersInfo.forEach((playerInfo: PlayerInfo) => {
-                const matchingPlayer: Player = state.players.find((player: Player) => player.playerId === playerInfo.playerId);
+                const matchingPlayer = state.players.find((playerContainer: PlayerContainer) => playerContainer.playerInfo.playerId === playerInfo.playerId);
 
-                if (matchingPlayer && (matchingPlayer.playerMovement.currentMovement.valueOf() !== playerInfo.playerMovement.currentMovement.valueOf() || matchingPlayer.playerMovement.previousMovement.valueOf() !== playerInfo.playerMovement.previousMovement.valueOf())) {
+                if (matchingPlayer && (matchingPlayer.playerInfo.playerMovement.currentMovement.valueOf() !== playerInfo.playerMovement.currentMovement.valueOf() || matchingPlayer.playerInfo.playerMovement.previousMovement.valueOf() !== playerInfo.playerMovement.previousMovement.valueOf())) {
 
-                    matchingPlayer.playerMovement.currentMovement = playerInfo.playerMovement.currentMovement;
-                    matchingPlayer.playerMovement.previousMovement = playerInfo.playerMovement.previousMovement;
-
-                    if (matchingPlayer && matchingPlayer.playerId !== state.mainPlayerId && (matchingPlayer.x !== playerInfo.playerMovement.x || matchingPlayer.y !== playerInfo.playerMovement.y)) {
+                    matchingPlayer.playerInfo.playerMovement.currentMovement = playerInfo.playerMovement.currentMovement;
+                    matchingPlayer.playerInfo.playerMovement.previousMovement = playerInfo.playerMovement.previousMovement;
+                    
+                    if (matchingPlayer && matchingPlayer.playerInfo.playerId !== state.mainPlayerId && (matchingPlayer.x !== playerInfo.playerMovement.x || matchingPlayer.y !== playerInfo.playerMovement.y)) {
                         matchingPlayer.setX(playerInfo.playerMovement.x);
-                        matchingPlayer.setY(playerInfo.playerMovement.y); 
+                        matchingPlayer.setY( playerInfo.playerMovement.y);
                     }
+                    
                 }
             });
         }
     },
     submitPlayerDisconnected({ commit }, playersInfo: PlayerInfo[]) {
         if (playersInfo.length !== state.players.length) {
-            const matchingPlayers: Player[] = [];
-            state.players.forEach((player: Player) =>  {
-                const matchingPlayer = playersInfo.some((playerInfo: PlayerInfo) => playerInfo.playerId === player.playerId);
+            const matchingPlayers: PlayerContainer[] = [];
+            state.players.forEach((playerContainer: PlayerContainer) =>  {
+                const matchingPlayer = playersInfo.some((playerInfo: PlayerInfo) => playerInfo.playerId === playerContainer.playerInfo.playerId);
 
                 if (matchingPlayer) {
-                    matchingPlayers.push(player);
+                    matchingPlayers.push(playerContainer);
                 }
                 else {
-                    player.destroy();
+                    playerContainer.destroy();
                 }
                 commit('playerDisconnected', matchingPlayers);
             });
         }
     },
-    submitAddPlayer({ commit}, player: Player) {
+    submitAddPlayer({ commit }, player: PlayerContainer) {
         commit('addPlayer', player);
+    },
+    submitAddScene({ commit }, scene: Phaser.Scene) {
+        commit('addScene', scene);
+    },
+    submitPlayerName({ commit }, playerName: string) {
+        console.log(playerName);
+        commit('playerName', playerName);
     }
 };
 

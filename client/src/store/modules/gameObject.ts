@@ -45,6 +45,18 @@ export const actions: ActionTree<IGameObjectState, IRootState> = {
         }
 
         commit('submitEnermyObjects', enermyObjects);
+    },
+    submitFullscreenObject({}, scene: Phaser.Scene) {
+        const fullscreen: Phaser.GameObjects.Image = scene.add.image(16, 16, 'fullscreen').setScale(2);
+        fullscreen.setInteractive().on('pointerdown', function() {
+            if (this.scale.isFullscreen) {
+                this.scale.stopFullscreen();
+                // On stop fulll screen
+            } else {
+                this.scale.startFullscreen();
+                // On start fulll screen
+            }
+        }, scene);
     }
 };
 

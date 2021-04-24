@@ -1,19 +1,21 @@
 import { Scene } from 'phaser';
-import Player from '../objects/player/player';
-import { io, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
 import EnermyGroup from '../objects/enermy/enermyGroup';
 import { store } from '../../store';
 import GameObjectConfig from './../objects/interfaces/gameObjectConfig';
-import MainPlayer from '../objects/player/mainPlayer';
 import PlayerCollision from '../objects/interfaces/playerCollision';
 import PlayerInfo from '../objects/interfaces/playerInfo';
 import CollectableGroup from '../objects/collectable/collectableGroup';
+import PlayerContainer from '../objects/player/playerContainer';
+import Player from '../objects/player/player';
+import MainPlayerContainer from '../objects/player/mainPlayerContainer';
+import Movement from '../objects/enums/movement';
+import PlayerText from '../objects/player/playerText';
 
 export default class PlayScene extends Scene {
   constructor () {
     super({ key: 'playScene' });
   }
-
   private layers: string[] = ['Sky', 'Details', 'Platform-1', 'Platform-2', 'Platform-3', 
                                     'Platform-4', 'Platform-5', 'Platform-6', 'Blocks-1', 'Blocks-2','Blocks-3', 'Blocks-4', 'Blocks-5', 'Blocks-6', 'Blocks-7', 'Blocks-8', 'Bridge'];
   
@@ -33,38 +35,55 @@ export default class PlayScene extends Scene {
 
   private randomDataGenerator: Phaser.Math.RandomDataGenerator = new Phaser.Math.RandomDataGenerator('shania');
 
-  private mainPlayer!: MainPlayer;
+  private mainPlayerContainer!: MainPlayerContainer;
+
+  public init(data: any) {
+    this.socket = data.socket;
+  }
 
   public create () {
-    //SOCKET IO - this would change to a live
-    this.socket = io('10.106.101.12:3000');
+    store.dispatch('playerModule/submitAddScene', this);
 
-    this.socket.on('connect', async () => {
+    this.socket.emit('playerConnected');
+    
+    this.scale.lockOrientation('landscape');
 
-      console.log('hello');
+    console.log(this.socket.id);
 
-      console.log(this.socket.id);
+    this.initMap();
 
-      this.initMap();
+    const player = new Player(this, this.socket.id);
 
-      this.mainPlayer = new MainPlayer(this, this.socket);
-  
-      this.createEnermies();
+    const playerName: string = store.getters['playerModule/playerName'];
+    console.log(playerName);
 
-      this.createCollectables();
+    const text = new PlayerText(this, playerName);
 
-      // Collisions between player/layer enermy etc
-      this.createCollisions();
-      
-      // Socket io events
-      this.listeners();
+    this.mainPlayerContainer = new MainPlayerContainer(this, this.socket, player, text, {
+      playerId: this.socket.id,
+      playerMovement: {
+        currentMovement: Movement.None,
+        previousMovement: Movement.None,
+        x: 0,
+        y: 0
+      }
     });
+
+    this.createEnermies();
+
+    this.createCollectables();
+
+    // Collisions between player/layer enermy etc
+    this.createCollisions();
+    
+    // Socket io events
+    this.listeners();
 
   }
   
   public update () {
-    if (this.mainPlayer && this.mainPlayer.controls) {
-      this.mainPlayer.controls.checkControls();
+    if (this.mainPlayerContainer && this.mainPlayerContainer.controls) {
+      this.mainPlayerContainer.controls.checkControls();
     }
 
     this.checkPlayersMovement();
@@ -134,19 +153,25 @@ export default class PlayScene extends Scene {
   }
 
   private playerConnected(playersInfo: PlayerInfo[]) {
-    const players: Player[] = store.getters['playerModule/players'];
-
+    const players: PlayerContainer[] = store.getters['playerModule/players'];
+    console.log(players);
     if (playersInfo.length !== players.length){
-      playersInfo.forEach((playerInfo) => {
-        const matchingPlayer = players.some((player) => player.playerId === playerInfo.playerId);
+      playersInfo.forEach((playerInfo: PlayerInfo) => {
+        const matchingPlayer = players.some((playerContainer: PlayerContainer) => playerContainer.playerInfo.playerId === playerInfo.playerId);
 
         if (!matchingPlayer) {
-          const player = new Player(this, playerInfo );
-          store.dispatch('playerModule/submitAddPlayer', player);
-          player.addToScene();
+          const player = new Player(this, playerInfo.playerId);
+
+          const text = new PlayerText(this, 'player');
+
+          const playerContainer = new PlayerContainer(this, player, text, playerInfo);
+
+          store.dispatch('playerModule/submitAddPlayer', playerContainer);
+
+          playerContainer.addToScene();
         }
 
-      })
+      });
     }
   }
 
@@ -171,32 +196,32 @@ export default class PlayScene extends Scene {
   }
 
   private checkPlayersMovement() {
-    const players: Player[] = store.getters['playerModule/players'];
+    const players: PlayerContainer[] = store.getters['playerModule/players'];
 
     if (players && players.length > 0) {
-      players.forEach((player) => {
-          if (player !== undefined) {
+      players.forEach((playerContainer) => {
+          if (playerContainer !== undefined) {
 
-            player.checkPlayerMovement();
+            playerContainer.checkPlayerMovement();
           }  
       });
     }
   }
 
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
-    const player = <Player>obj1;
+    const playerContainer = <PlayerContainer>obj1;
     const enermy = <Phaser.GameObjects.Image>obj2;
 
-    player.removeHealth();
+    playerContainer.player.removeHealth();
     enermy.destroy();
   }
 
   private collectablePlayerOverlap(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
-    const player = <Player>obj1;
+    const playerContainer = <PlayerContainer>obj1;
     const collectable = <Phaser.GameObjects.Image>obj2;
 
-    if (player.playerHealth < 100) {
-      player.addHealth();
+    if (playerContainer.player.playerHealth < 100) {
+      playerContainer.player.addHealth();
       collectable.destroy();
     }
   }

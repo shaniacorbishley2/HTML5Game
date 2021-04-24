@@ -1,5 +1,6 @@
   
 import { Scene } from 'phaser';
+import { store } from '../../store'
 
 //SCENES - different areas of your game (ie different screens, rooms etc..)
 export default class BootScene extends Scene {
@@ -8,6 +9,8 @@ export default class BootScene extends Scene {
   }
 
   public preload () {
+    store.dispatch('playerModule/submitAddScene', this);
+
     // Character
     this.load.aseprite('bear', 'assets/bear-sprite.png', 'assets/bear-sprite.json');
 
@@ -21,6 +24,8 @@ export default class BootScene extends Scene {
     this.load.image('red-gem', 'assets/red-gem.png');
     this.load.image('yellow-gem', 'assets/yellow-gem.png');
 
+    this.load.image('fullscreen', 'assets/fullscreen.png');
+
     // Tilemap
     this.load.tilemapTiledJSON('tilemap', 'assets/nature-tilemap.json');
     
@@ -31,8 +36,10 @@ export default class BootScene extends Scene {
     this.load.image('menu-text', 'assets/menu-text.png');
     this.load.image('play-text', 'assets/play-text.png');
   }
+  
 
   public create () {
+    this.scale.lockOrientation('landscape');
     // Creates sprite animation using aesprite json
     this.anims.createFromAseprite('bear');
 
