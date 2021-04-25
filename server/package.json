@@ -2,6 +2,10 @@
   "name": "html5-game-sever",
   "version": "1.0.0",
   "description": "",
+  "engines": {
+    "node": "14.15.x",
+    "npm": "7.11.x"
+  },
   "scripts": {
     "build": "tsc",
     "start": "npm run build && node dist/index.js",

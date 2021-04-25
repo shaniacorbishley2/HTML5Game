@@ -20,7 +20,7 @@ export default class MainMenuScene extends Scene {
         this.scale.lockOrientation('landscape');
 
         //SOCKET IO - this would change to a live link in the possible future
-        this.socket = io('https://gentle-falls-10117.herokuapp.com/');
+        this.socket = io('https://cryptic-waters-99485.herokuapp.com/');
 
         // When socket connects
         this.socket.on('connect', () => {
