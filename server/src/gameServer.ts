@@ -20,8 +20,8 @@ export default class GameServer {
   });
 
   public start() {
-    this.server.listen(3000, () => {
-      console.log(`App running on port ${3000}`);
+    this.server.listen(process.env.PORT || 3000, () => {
+      console.log(`App running on port ${process.env.PORT}`);
     });
 
     this.io.on('connection',  (socket: Socket) => {
