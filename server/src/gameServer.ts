@@ -164,6 +164,7 @@ export default class GameServer {
     });
   }
 
+  // Add health
   private playerHealthGained(playerInfo: PlayerInfo) {
     this.players.find((player: PlayerInfo, index) => {
       if (player.playerId === playerInfo.playerId) {
