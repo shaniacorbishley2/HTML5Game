@@ -72,6 +72,8 @@ export default class PlayScene extends Scene {
   private initScene() {
     store.dispatch('playerModule/submitAddScene', this);
 
+    store.dispatch('gameObjectModule/submitFullscreenObject', this);
+
     this.socket.emit('playerConnected');
     
     this.scale.lockOrientation('landscape');

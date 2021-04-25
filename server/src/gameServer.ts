@@ -116,6 +116,9 @@ export default class GameServer {
         else if (!countdownToStart) {
           this.io.emit('gameEnded');
           this.io.emit('playEnabled');
+          
+          this.players = [];
+          this.io.emit('playerDisconnected', this.players);
 
           this.gameStarted = false;
         }
