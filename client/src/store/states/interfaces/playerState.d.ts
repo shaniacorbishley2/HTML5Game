@@ -3,7 +3,7 @@ interface IPlayerState {
     players: PlayerContainer[];
     mainPlayerId: string;
     scene: Phaser.Scene | null;
-    playerName: string;
+    mainPlayerName: string;
 };
 
 export default IPlayerState;

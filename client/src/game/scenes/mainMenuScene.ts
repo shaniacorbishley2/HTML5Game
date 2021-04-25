@@ -19,11 +19,13 @@ export default class MainMenuScene extends Scene {
 
         this.scale.lockOrientation('landscape');
 
-        //SOCKET IO - this would change to a live
+        //SOCKET IO - this would change to a live link in the possible future
         this.socket = io('10.106.101.12:3000');
 
+        // When socket connects
         this.socket.on('connect', () => {
-            // When the play button is pressed, start
+
+            store.dispatch('playerModule/submitMainPlayerId', this.socket.id);
             
             this.initMenu();
             
@@ -37,10 +39,11 @@ export default class MainMenuScene extends Scene {
         });
     }
 
+    // Stops users from clicking play when the game is in progress
     private playButtonDisabled() {
         this.playEnabled = false
         this.playButton.setVisible(false);
-        this.gameFullText = this.add.bitmapText(250, 210, 'minecraft', 'Game full, please wait...').setDepth(5).setTintFill(0xff6666);
+        this.gameFullText = this.add.bitmapText(230, 210, 'minecraft', 'Game in progress, please wait...').setDepth(5).setTintFill(0xff6666);
     }
 
     private playButtonEnabled() {
@@ -58,6 +61,7 @@ export default class MainMenuScene extends Scene {
         // Add background
         this.add.image(0, 0, 'main-menu-background').setOrigin(0).setDepth(0);
 
+        // Add fullscreen object to scene, allows user to enter full screen on click, not supported on iPhone.
         store.dispatch('gameObjectModule/submitFullscreenObject', this);
         
         // Add text
@@ -69,12 +73,14 @@ export default class MainMenuScene extends Scene {
         // Play Button logic
         this.playButton.setInteractive();
 
+        // When the play button is pressed, start
         this.playButton.on('pointerdown', () => {
             this.scene.start('playScene', {socket: this.socket});
         
         });
     }
 
+    // Listen for socket events
     private listeners() {
         this.socket.on('playDisabled', () => {
             this.playButtonDisabled();

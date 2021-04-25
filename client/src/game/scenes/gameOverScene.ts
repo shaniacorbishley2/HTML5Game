@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
 import { store } from '../../store'
 
-//SCENES - different areas of your game (ie different screens, rooms etc..)
+// Scene called when the game timer ends, all players will get sent to this screen.
 export default class GameOverScene extends Scene {
     constructor () {
         super({ key: 'gameOverScene' });

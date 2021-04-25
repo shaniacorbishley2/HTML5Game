@@ -1,6 +1,7 @@
-import PlayerCollision from '@/game/objects/interfaces/playerCollision';
-import PlayerHealth from '@/game/objects/interfaces/playerHealth';
-import PlayerInfo from '@/game/objects/interfaces/playerInfo';
+import PlayerCollision from '@/game/objects/interfaces/player/playerCollision';
+import PlayerHealth from '@/game/objects/interfaces/player/playerHealth';
+import PlayerInfo from '@/game/objects/interfaces/player/playerInfo';
+import PlayerName from '@/game/objects/interfaces/player/playerName';
 import PlayerContainer from '@/game/objects/player/playerContainer';
 import {GetterTree, MutationTree, ActionTree, Module } from 'vuex';
 import  IRootState  from '../states/interfaces';
@@ -17,7 +18,7 @@ export const getters: GetterTree<IPlayerState, IRootState> = {
         return playerContainer ? playerContainer.playerInfo.health : 0;
     },
     scene: (state: IPlayerState) => state.scene,
-    playerName: (state:IPlayerState) => state.playerName
+    mainPlayerName: (state:IPlayerState) => state.mainPlayerName
 };
 
 export const mutations: MutationTree<IPlayerState> = {
@@ -35,8 +36,9 @@ export const mutations: MutationTree<IPlayerState> = {
     addScene: (state: IPlayerState, scene: Phaser.Scene) => {
         state.scene = scene;
     },
-    playerName: (state: IPlayerState, playerName: string) => {
-        state.playerName = playerName
+    mainPlayerName: (state: IPlayerState, playerName: string) => { 
+        state.mainPlayerName = playerName
+    
     },
     removePlayer: (state: IPlayerState, playerId: string) => {
         state.players = state.players.filter((player: PlayerContainer) => player.playerInfo.playerId !== playerId);
@@ -118,13 +120,14 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
     submitAddScene({ commit }, scene: Phaser.Scene) {
         commit('addScene', scene);
     },
-    submitPlayerName({ commit }, playerName: string) {
-        commit('playerName', playerName);
+    submitMainPlayerName({ commit }, playerName: string) {
+        commit('mainPlayerName', playerName);
     },
     submitUpdatePlayerHealth({}, playerHealth: PlayerHealth) {
         state.players.find((player: PlayerContainer) => {
             if (player.playerInfo.playerId === playerHealth.playerId) {
                 player.playerInfo.health = playerHealth.health;
+                player.text.setText(`${player.playerInfo.name} ${player.playerInfo.health}`);
             }
         });
     },
@@ -138,6 +141,13 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
                 }
             });
         }
+    },
+    submitAddPlayerName({}, playerName: PlayerName) {
+        state.players.find((player: PlayerContainer) => {
+            if (player.playerInfo.playerId === playerName.playerId) {
+                player.playerInfo.name = playerName.name;
+            }
+        })
     }
 };
 

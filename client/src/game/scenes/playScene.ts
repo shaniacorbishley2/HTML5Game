@@ -3,14 +3,15 @@ import { Socket } from 'socket.io-client';
 import EnermyGroup from '../objects/enermy/enermyGroup';
 import { store } from '../../store';
 import GameObjectConfig from './../objects/interfaces/gameObjectConfig';
-import PlayerCollision from '../objects/interfaces/playerCollision';
-import PlayerInfo from '../objects/interfaces/playerInfo';
+import PlayerCollision from '../objects/interfaces/player/playerCollision';
+import PlayerInfo from '../objects/interfaces/player/playerInfo';
 import CollectableGroup from '../objects/collectable/collectableGroup';
 import PlayerContainer from '../objects/player/playerContainer';
 import MainPlayerContainer from '../objects/player/mainPlayerContainer';
 import Movement from '../objects/enums/movement';
 import PlayerText from '../objects/player/playerText';
-import PlayerHealth from '../objects/interfaces/playerHealth';
+import PlayerHealth from '../objects/interfaces/player/playerHealth';
+import PlayerName from '../objects/interfaces/player/playerName';
 
 export default class PlayScene extends Scene {
   constructor () {
@@ -40,8 +41,6 @@ export default class PlayScene extends Scene {
   private startTimer: number = 0;
 
   private gameTimerText!: Phaser.GameObjects.BitmapText;
-
-  private gameStarted: boolean = false;
 
   public init(data: any) {
     this.socket = data.socket;
@@ -74,7 +73,9 @@ export default class PlayScene extends Scene {
 
     store.dispatch('gameObjectModule/submitFullscreenObject', this);
 
-    this.socket.emit('playerConnected');
+    const name: string = store.getters['playerModule/mainPlayerName'];
+
+    this.socket.emit('playerConnected', name);
     
     this.scale.lockOrientation('landscape');
 
@@ -129,6 +130,7 @@ export default class PlayScene extends Scene {
     this.enermyGroup.addEnermies(enermyObjects); 
   }
 
+  // Creates the layer collisions for the map
   private createLayerCollisions() {
     this.collisionLayers.forEach((layer) => {
       const playerLayerCollisions: PlayerCollision = {scene: this, colliderObject: layer};
@@ -139,6 +141,7 @@ export default class PlayScene extends Scene {
     });
   }
 
+  // Creates all collisions for the game objects, ie enermies, collectables.. etc
   private createGameObjectCollisions() {
     this.collisionLayers.forEach((layer) => {
 
@@ -162,7 +165,11 @@ export default class PlayScene extends Scene {
         if (!matchingPlayer) {
           const player = new Phaser.GameObjects.Sprite(this, 0, -1, 'bear').setOrigin(0.25, 0);
 
-          const text = new PlayerText(this, 'player');
+          if (playerInfo.name.length <= 0) {
+            playerInfo.name = playerInfo.playerId;
+          }
+
+          const text = new PlayerText(this, `${playerInfo.name}  ${playerInfo.health}`);
 
           const playerContainer = new PlayerContainer(this, player, text, playerInfo);
 
@@ -175,6 +182,7 @@ export default class PlayScene extends Scene {
     }
   }
 
+  // Socket event listeners
   private listeners() {
     this.socket.on('startGameTimer', (startTimer: number[]) => {
       this.startTimer = startTimer[0];
@@ -212,7 +220,6 @@ export default class PlayScene extends Scene {
     })
 
     this.socket.on('gameStarted', () => {
-      this.gameStarted = true;
       this.createEnermies();
       this.createCollectables();
       this.createGameObjectCollisions();
@@ -227,6 +234,7 @@ export default class PlayScene extends Scene {
     });
   }
 
+  // Checks all players movement
   private checkPlayersMovement() {
     const players: PlayerContainer[] = store.getters['playerModule/players'];
 
@@ -240,6 +248,7 @@ export default class PlayScene extends Scene {
     }
   }
 
+  // Called when enermy and player collide
   private enermyPlayerCollide(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
     const playerContainer = <PlayerContainer>obj1;
     const enermy = <Phaser.GameObjects.Image>obj2;
@@ -249,6 +258,7 @@ export default class PlayScene extends Scene {
     enermy.destroy();
   }
 
+  // Called when player and collectable overlap
   private collectablePlayerOverlap(obj1: Phaser.Types.Physics.Arcade.ArcadeColliderType , obj2: Phaser.Types.Physics.Arcade.ArcadeColliderType) {
     const playerContainer = <PlayerContainer>obj1;
     const collectable = <Phaser.GameObjects.Image>obj2;
@@ -277,21 +287,25 @@ export default class PlayScene extends Scene {
   }
 
   private createMainPlayerContainer() {
+    const name: string = store.getters['playerModule/mainPlayerName'];
+
+    const playerInfo: PlayerInfo = {
+      
+        playerId: this.socket.id,
+        playerMovement: {
+          currentMovement: Movement.None,
+          previousMovement: Movement.None,
+          x: 0,
+          y: 0
+        },
+        health: 100,
+        name: name.length > 0 ? name : this.socket.id
+    }
+
     const player = new Phaser.GameObjects.Sprite(this, 0, -1, 'bear').setOrigin(0.25, 0);
 
-    const playerName: string = store.getters['playerModule/playerName'];
+    const text = new PlayerText(this, `${playerInfo.name}  ${playerInfo.health}`);
 
-    const text = new PlayerText(this, playerName);
-
-    this.mainPlayerContainer = new MainPlayerContainer(this, this.socket, player, text, {
-      playerId: this.socket.id,
-      playerMovement: {
-        currentMovement: Movement.None,
-        previousMovement: Movement.None,
-        x: 0,
-        y: 0
-      },
-      health: 100
-    });
+    this.mainPlayerContainer = new MainPlayerContainer(this, this.socket, player, text, playerInfo );
   }
 }

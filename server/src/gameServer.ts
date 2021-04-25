@@ -20,7 +20,7 @@ export default class GameServer {
   });
 
   public start() {
-    this.server.listen(3000, '10.106.101.12', () => {
+    this.server.listen(3000, () => {
       console.log(`App running on port ${3000}`);
     });
 
@@ -29,8 +29,8 @@ export default class GameServer {
         this.io.emit('playDisabled');
       }
 
-      socket.on('playerConnected', () => {
-        this.playerConnected(socket.id);
+      socket.on('playerConnected', (name: string) => {
+        this.playerConnected(socket.id, name);
 
         if (this.players.length > 1) {
 
@@ -67,15 +67,18 @@ export default class GameServer {
     });
   }
 
-  private playerConnected(playerId: string) {
-    this.players.push({playerId: playerId, 
+  private playerConnected(playerId: string, name: string) {
+    this.players.push(
+      {playerId: playerId, 
       playerMovement: {
         currentMovement: Movement.None,
         previousMovement: Movement.None,
         x: 0,
         y: 0
       },
-      health: 100 });
+      health: 100,
+      name: name
+    });
 
 
     this.io.emit('playerConnected', this.players);
@@ -167,6 +170,5 @@ export default class GameServer {
           this.players[index].health += 5;
       }
     });
-
   }
 }
