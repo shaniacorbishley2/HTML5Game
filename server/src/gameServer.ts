@@ -21,7 +21,7 @@ export default class GameServer {
 
   public start() {
     this.server.listen(process.env.PORT || 3000, () => {
-      console.log(`App running on port ${process.env.PORT}`);
+      console.log(`App running on port ${process.env.PORT || 3000}`);
     });
 
     this.io.on('connection',  (socket: Socket) => {
@@ -164,6 +164,7 @@ export default class GameServer {
     });
   }
 
+  // Add health
   private playerHealthGained(playerInfo: PlayerInfo) {
     this.players.find((player: PlayerInfo, index) => {
       if (player.playerId === playerInfo.playerId) {
