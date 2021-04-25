@@ -141,13 +141,6 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
                 }
             });
         }
-    },
-    submitAddPlayerName({}, playerName: PlayerName) {
-        state.players.find((player: PlayerContainer) => {
-            if (player.playerInfo.playerId === playerName.playerId) {
-                player.playerInfo.name = playerName.name;
-            }
-        })
     }
 };
 
