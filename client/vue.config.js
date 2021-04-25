@@ -32,7 +32,7 @@ module.exports = {
   devServer: {
     open: true,
     hot: false,
-    port: 8080,
-    host: '10.106.101.12'
+    port: 8080
+    
   }
 };

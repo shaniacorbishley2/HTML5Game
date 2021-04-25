@@ -13,13 +13,12 @@ export default class NameInput extends Vue {
 
     public gameHeight: number | null = 0;
 
-
     public get playerName() {
-        return this.$store.getters['playerModule/playerName'];
+        return this.$store.getters['playerModule/mainPlayerName'];
     }
 
-    public set playerName(value: string) {
-        this.$store.dispatch('playerModule/submitPlayerName', value);
+    public set playerName(name: string) {
+        this.$store.dispatch('playerModule/submitMainPlayerName', name);
     }
 
     public updated() {
@@ -27,7 +26,7 @@ export default class NameInput extends Vue {
 
         window.addEventListener("resize", () => {
             this.scaleInput();
-        })
+        });
     }
 
     public showNameInput() {

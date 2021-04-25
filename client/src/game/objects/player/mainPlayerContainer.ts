@@ -2,7 +2,7 @@ import Controls from "../controls";
 import { Socket } from 'socket.io-client';
 import { store } from '../../../store';
 import Phaser from 'phaser';
-import PlayerInfo from "../interfaces/playerInfo";
+import PlayerInfo from "../interfaces/player/playerInfo";
 import Movement from "../enums/movement";
 import PlayerContainer from "./playerContainer";
 
@@ -17,8 +17,8 @@ export default class MainPlayerContainer extends PlayerContainer {
         this.initMainPlayer();
     }
 
+    // Create controls
     private addPlayerControls() {
-        // Create controls
         this.controls = new Controls(this, this.socket);
         this.controls.createKeys();
     }
@@ -32,11 +32,9 @@ export default class MainPlayerContainer extends PlayerContainer {
                 x: this.x,
                 y: this.y
             },
-            health: 100
-        }
-        // Create player
-        store.dispatch('playerModule/submitMainPlayerId', this.socket.id);
- 
+            health: 100,
+            name: ''
+        } 
         store.dispatch('playerModule/submitAddPlayer', this);
 
         this.scene.add.existing(this);

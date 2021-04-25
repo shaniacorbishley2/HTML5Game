@@ -1,7 +1,7 @@
 import Keys from './interfaces/keys';
 import Movement from './enums/movement';
 import { Socket } from 'socket.io-client';
-import PlayerInfo from './interfaces/playerInfo';
+import PlayerInfo from './interfaces/player/playerInfo';
 import MainPlayerContainer from './player/mainPlayerContainer';
 
 export default class Controls {
@@ -96,7 +96,8 @@ export default class Controls {
                     currentMovement: this.currentMovement,
                     previousMovement: this.previousMovement
                 },
-                health: this.mainPlayerContainer.playerInfo.health
+                health: this.mainPlayerContainer.playerInfo.health,
+                name: this.mainPlayerContainer.playerInfo.name
             };
 
             if (this.currentMovement !== this.previousMovement) {

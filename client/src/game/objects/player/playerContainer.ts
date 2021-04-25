@@ -1,9 +1,10 @@
 import Movement from "../enums/movement";
-import PlayerInfo from "../interfaces/playerInfo";
+import PlayerInfo from "../interfaces/player/playerInfo";
 export default class PlayerContainer extends Phaser.GameObjects.Container {
 
-    
     public playerInfo: PlayerInfo;
+
+    public text: Phaser.GameObjects.BitmapText;
 
     private player: Phaser.GameObjects.Sprite;
 
@@ -16,6 +17,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
         this.scene = scene;
         this.player = player;
         this.playerInfo = playerInfo;
+        this.text = text;
         this.initPlayerContainer();
     }
 
@@ -78,6 +80,7 @@ export default class PlayerContainer extends Phaser.GameObjects.Container {
 
     }
     
+    // Checks player movement, called continuously in update loop
     public checkPlayerMovement() {
         if (this.playerInfo.playerMovement && this.body instanceof Phaser.Physics.Arcade.Body) {
             
