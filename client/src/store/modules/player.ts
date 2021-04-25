@@ -37,6 +37,9 @@ export const mutations: MutationTree<IPlayerState> = {
     },
     playerName: (state: IPlayerState, playerName: string) => {
         state.playerName = playerName
+    },
+    removePlayer: (state: IPlayerState, playerId: string) => {
+        state.players = state.players.filter((player: PlayerContainer) => player.playerInfo.playerId !== playerId);
     }
 };
 
@@ -46,7 +49,7 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
     },
     submitPlayerCollisions({}, playerCollision: PlayerCollision ) {
         state.players.forEach((playerContainer: PlayerContainer) => {
-            if (playerCollision.callback) {
+            if (playerCollision.callback && playerContainer) {
                 playerContainer.scene.physics.add.collider(playerContainer, playerCollision.colliderObject, playerCollision.callback);
             }
             playerContainer.scene.physics.add.collider(playerContainer, playerCollision.colliderObject);
@@ -54,7 +57,7 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
     },
     submitPlayerOverlap({}, playerCollision: PlayerCollision){
         state.players.forEach((playerContainer: PlayerContainer) => {
-            if (playerCollision.callback) {
+            if (playerCollision.callback && playerContainer) {
                 playerContainer.scene.physics.add.overlap(playerContainer, playerCollision.colliderObject, playerCollision.callback);
             }
         });
@@ -124,7 +127,18 @@ export const actions: ActionTree<IPlayerState, IRootState> = {
                 player.playerInfo.health = playerHealth.health;
             }
         });
-    }   
+    },
+    submitPlayerDead({commit}, playerId: string) {
+        if(state.players.length > 0) {
+            state.players.find((player: PlayerContainer) => {
+                if (player.playerInfo.playerId === playerId) {
+                    commit('removePlayer', playerId);
+                    player.removeAll();
+                    player.destroy();
+                }
+            });
+        }
+    }
 };
 
 export const playerModule: Module<IPlayerState, IRootState> = {

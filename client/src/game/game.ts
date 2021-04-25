@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/bootScene';
+import GameOverScene from './scenes/gameOverScene';
 import MainMenuScene from './scenes/mainMenuScene';
 import PlayScene from './scenes/playScene';
 
@@ -26,7 +27,7 @@ function launch(containerId: any) {
         
       }
     },
-    scene: [BootScene, PlayScene, MainMenuScene]
+    scene: [BootScene, PlayScene, MainMenuScene, GameOverScene]
   });
 }
 

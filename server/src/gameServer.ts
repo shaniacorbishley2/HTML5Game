@@ -25,11 +25,16 @@ export default class GameServer {
     });
 
     this.io.on('connection',  (socket: Socket) => {
+      if (this.gameStarted) {
+        this.io.emit('playDisabled');
+      }
+
       socket.on('playerConnected', () => {
         this.playerConnected(socket.id);
+
         if (this.players.length > 1) {
 
-          this.gameStartTimer();
+          this.gameStartTimer(5, true);
         }
       });
 
@@ -42,8 +47,8 @@ export default class GameServer {
 
         this.io.emit('playerKeyPressed', this.players);
 
-        console.log(playerInfo[0].playerId, playerInfo[0].playerMovement.previousMovement, playerInfo[0].playerMovement.currentMovement, playerInfo[0].playerMovement.x, playerInfo[0].playerMovement.y);
-        console.log(this.players)
+        // console.log(playerInfo[0].playerId, playerInfo[0].playerMovement.previousMovement, playerInfo[0].playerMovement.currentMovement, playerInfo[0].playerMovement.x, playerInfo[0].playerMovement.y);
+        // console.log(this.players)
       });
 
       socket.on('playerLocation', (playerInfo: PlayerInfo[]) => {
@@ -54,16 +59,15 @@ export default class GameServer {
       socket.on('playerHit', (playerInfo: PlayerInfo[]) => {
         this.playerHit(playerInfo[0]);
       });
+
+      socket.on('gameStarted', () => {
+        this.gameStartTimer(5, false);
+        this.io.emit('playDisabled');
+      })
     });
   }
 
   private playerConnected(playerId: string) {
-
-    // TODO: if there are 5 players already then the 6th player has to be a spectator
-    // If the game is in process and a player leaves, 6th player cannot join until the game has ended
-
-    // Else let the player join
-    // If there is only one player then continue as normal
     this.players.push({playerId: playerId, 
       playerMovement: {
         currentMovement: Movement.None,
@@ -72,19 +76,15 @@ export default class GameServer {
         y: 0
       },
       health: 100 });
-    
-      // If there is already one player in the game, we need to call the logic to 'add another player' emit the event on created
 
-    // console.log(this.players);
 
     this.io.emit('playerConnected', this.players);
     
-    // console.log(`player ${playerId} connected`);
-    // console.log(`there are ${this.players.length} players`);
+    console.log(`player ${playerId} connected`);
   }
 
   private playerDisconnect(playerId: string) {
-    //console.log(`player ${playerId} disconnected`);
+    console.log(`player ${playerId} disconnected`);
 
     this.players = this.players.filter((player: PlayerInfo) => player.playerId !== playerId);
 
@@ -92,7 +92,6 @@ export default class GameServer {
   }
 
   private updatePlayerMovement(playerInfo: PlayerInfo) {
-    //(this.players);
     this.players.forEach((player: PlayerInfo) => {
 
       if (player.playerId === playerInfo.playerId) {    
@@ -102,17 +101,36 @@ export default class GameServer {
     });
   }
 
-  private gameStartTimer() {
-    let timeLeft = 10;
+  private gameStartTimer(timerAmount: number, countdownToStart: boolean) {
+    let timeLeft = timerAmount;
     
     const timer = setInterval(() => {
       if (timeLeft == -1) {
         clearTimeout(timer);
-        console.log('times up!');
-        this.io.emit('gameStarted');
-        this.gameStarted = true;
-      } else {
-        this.io.emit('startGameTimer', [timeLeft]);
+
+        if (countdownToStart) {
+          this.io.emit('gameStarted');
+          this.gameStarted = true;
+        }
+
+        else if (!countdownToStart) {
+          this.io.emit('gameEnded');
+          this.io.emit('playEnabled');
+
+          this.gameStarted = false;
+        }
+      }
+
+      else if (this.players.length <= 0) {
+        clearTimeout(timer);
+
+        this.io.emit('gameEnded');
+        this.io.emit('playEnabled');
+        this.gameStarted = false;
+      }
+
+      else {
+        countdownToStart ? this.io.emit('startGameTimer', [timeLeft]) : this.io.emit('endGameTimer', [timeLeft]);
         console.log(timeLeft + ' seconds remaining');
         timeLeft--;
       }
@@ -121,9 +139,10 @@ export default class GameServer {
 
   private playerHit(playerInfo: PlayerInfo) {
     let playerHealth: PlayerHealth;
+
     this.players.find((player: PlayerInfo) => {
-      if (player.playerId === playerInfo.playerId) {
-          player.health -= 10;
+      if (player.playerId === playerInfo.playerId && player.health > 0) {
+          player.health -= 20;
 
           playerHealth = {
             playerId: player.playerId,
@@ -132,18 +151,20 @@ export default class GameServer {
           console.log('player hit', player.playerId, 'new health:', player.health);
           this.io.emit('updatePlayerHealth', [playerHealth]);
       }
+
+      else if (player.health <= 0) {
+        this.io.emit('playerDead', [player.playerId]);
+        this.players = this.players.filter((playerInfo: PlayerInfo) => playerInfo.playerId !== player.playerId);
+      }
     });
   }
 
   private playerHealthGained(playerInfo: PlayerInfo) {
     this.players.find((player: PlayerInfo, index) => {
       if (player.playerId === playerInfo.playerId) {
-          this.players[index].health += 10;
+          this.players[index].health += 5;
       }
     });
 
   }
-
-
-
 }

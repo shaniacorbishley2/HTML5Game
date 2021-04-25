@@ -41,6 +41,8 @@ export default class PlayScene extends Scene {
 
   private gameTimerText!: Phaser.GameObjects.BitmapText;
 
+  private gameStarted: boolean = false;
+
   public init(data: any) {
     this.socket = data.socket;
   }
@@ -49,7 +51,7 @@ export default class PlayScene extends Scene {
     this.initScene();
 
     this.initMap();
-    
+
     this.createMainPlayerContainer();
 
     // Collisions between player/layer enermy etc
@@ -57,7 +59,6 @@ export default class PlayScene extends Scene {
     
     // Socket io events
     this.listeners();
-
   }
   
   public update () {
@@ -75,7 +76,7 @@ export default class PlayScene extends Scene {
     
     this.scale.lockOrientation('landscape');
 
-    this.gameTimerText = this.add.bitmapText(480, 5, 'minecraft', 'Waiting for players...').setDepth(5);
+    this.gameTimerText = this.add.bitmapText(450, 5, 'minecraft', 'Waiting for players...').setDepth(5);
 
     this.add.existing(this.gameTimerText);
 
@@ -201,10 +202,28 @@ export default class PlayScene extends Scene {
       store.dispatch('playerModule/submitUpdatePlayerHealth', playerHealth[0]);
     });
 
+    this.socket.on('playerDead', (playerId: string[]) => {
+      store.dispatch('playerModule/submitPlayerDead', playerId[0]);
+    });
+
+    this.socket.on('gameEnded', () => {
+      this.scene.start('gameOverScene');
+    })
+
     this.socket.on('gameStarted', () => {
+      this.gameStarted = true;
       this.createEnermies();
       this.createCollectables();
       this.createGameObjectCollisions();
+      this.gameTimerText.setText('Game started!');
+
+      this.socket.emit('gameStarted');
+    });
+
+    this.socket.on('endGameTimer', (endTimer: number[]) => {
+      this.startTimer = endTimer[0];
+      this.gameTimerText.setText(`Round ends in... ${this.startTimer}s`);
+      console.log(this.startTimer);
     });
   }
 
@@ -227,7 +246,6 @@ export default class PlayScene extends Scene {
 
     this.socket.emit('playerHit', [playerContainer.playerInfo]);
 
-    // playerContainer.removeHealth();
     enermy.destroy();
   }
 
@@ -235,10 +253,9 @@ export default class PlayScene extends Scene {
     const playerContainer = <PlayerContainer>obj1;
     const collectable = <Phaser.GameObjects.Image>obj2;
 
-    this.socket.emit('playerHealthGained', [playerContainer.playerInfo]);
-
+    
     if (playerContainer.playerInfo.health < 100) {
-      // playerContainer.addHealth();
+      this.socket.emit('playerHealthGained', [playerContainer.playerInfo]);
       collectable.destroy();
     }
   }

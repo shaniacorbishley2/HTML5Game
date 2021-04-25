@@ -31,7 +31,7 @@ export default class NameInput extends Vue {
     }
 
     public showNameInput() {
-        if (this.scene && this.scene.scene.isActive('mainMenuScene')) {
+        if (this.scene && this.scene.scene.isActive('mainMenuScene') && this.scene.scene.isVisible('mainMenuScene')) {
             return true;
         }
         return false;
@@ -41,19 +41,24 @@ export default class NameInput extends Vue {
         return this.$store.getters['playerModule/scene'];
     }
 
-    private scaleToGameWidth(elementName: string, per: number) {
+    private scaleToGameWidth(elementName: string, percent: number) {
         if (document !== null && document.getElementById(elementName)) {
-
-            var width = this.gameWidth * per;
+            const width = this.gameWidth * percent;
             document.getElementById(elementName).style.width = `${width}px`;
         }
     }
 
-    private scaleToGameHeight(elementName: string, per: number) {
+    private scaleToGameHeight(elementName: string, percent: number) {
         if (document !== null && document.getElementById(elementName)) {
-
-            var height = this.gameHeight * per;
+            const height = this.gameHeight * percent;
             document.getElementById(elementName).style.height = `${height}px`;
+        }
+    }
+
+    private scaleFontSize(elementName: string, percent: number) {
+        if (document !== null && document.getElementById(elementName)) {
+            const fontSize = document.getElementById(elementName).getBoundingClientRect().height * percent;
+            document.getElementById(elementName).style.fontSize = `${fontSize}px`;
         }
     }
 
@@ -64,6 +69,7 @@ export default class NameInput extends Vue {
 
             this.scaleToGameWidth('name-input', 0.2);
             this.scaleToGameHeight('name-input', 0.05);
+            this.scaleFontSize('name-input', 0.35);
         }
     }
 
