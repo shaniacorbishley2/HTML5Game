@@ -1,0 +1,13 @@
+.name-input {
+    position: absolute;
+    left: 40%;
+    top: 45%;
+
+    &__input {
+        position: relative;
+        font-size: 1.875rem;
+        ::placeholder {
+            font-size: 1rem;
+        }
+    }
+}
