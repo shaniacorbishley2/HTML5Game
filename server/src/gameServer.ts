@@ -116,7 +116,7 @@ export default class GameServer {
         else if (!countdownToStart) {
           this.io.emit('gameEnded');
           this.io.emit('playEnabled');
-          
+
           this.players = [];
           this.io.emit('playerDisconnected', this.players);
 
@@ -134,7 +134,6 @@ export default class GameServer {
 
       else {
         countdownToStart ? this.io.emit('startGameTimer', [timeLeft]) : this.io.emit('endGameTimer', [timeLeft]);
-        console.log(timeLeft + ' seconds remaining');
         timeLeft--;
       }
     }, 1000);

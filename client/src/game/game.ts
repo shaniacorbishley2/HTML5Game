@@ -23,7 +23,7 @@ function launch(containerId: any) {
       default: 'arcade',
       arcade: {
         gravity: { y: 300 },
-        debug: true,
+        //debug: true,
         
       }
     },

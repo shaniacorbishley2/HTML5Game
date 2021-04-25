@@ -179,7 +179,6 @@ export default class PlayScene extends Scene {
     this.socket.on('startGameTimer', (startTimer: number[]) => {
       this.startTimer = startTimer[0];
       this.gameTimerText.setText(`Game starting in... ${this.startTimer}s`);
-      console.log(this.startTimer);
     });
 
     this.socket.on('playerConnected', (playersInfo: PlayerInfo[]) => {
@@ -225,7 +224,6 @@ export default class PlayScene extends Scene {
     this.socket.on('endGameTimer', (endTimer: number[]) => {
       this.startTimer = endTimer[0];
       this.gameTimerText.setText(`Round ends in... ${this.startTimer}s`);
-      console.log(this.startTimer);
     });
   }
 
