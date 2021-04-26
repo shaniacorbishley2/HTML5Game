@@ -27,7 +27,8 @@ function launch(containerId: any) {
         
       }
     },
-    scene: [BootScene, PlayScene, MainMenuScene, GameOverScene]
+    scene: [BootScene, PlayScene, MainMenuScene, GameOverScene],
+    seed: ['38072']
   });
 }
 

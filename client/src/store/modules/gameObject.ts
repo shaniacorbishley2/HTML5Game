@@ -28,7 +28,7 @@ export const actions: ActionTree<IGameObjectState, IRootState> = {
         let collectableObjects: Phaser.GameObjects.Image[] = [];
 
         for (let i = 0; i <= object.amount; i++) {
-            const gameObject: Phaser.GameObjects.Image = new Phaser.GameObjects.Image(object.scene, Phaser.Math.Between(100, 340), object.y, object.texture);
+            const gameObject: Phaser.GameObjects.Image = new Phaser.GameObjects.Image(object.scene, Phaser.Math.RND.between(100, 250), object.y, object.texture);
             collectableObjects.push(gameObject);
         }
 
@@ -39,7 +39,7 @@ export const actions: ActionTree<IGameObjectState, IRootState> = {
         let enermyObjects: Phaser.GameObjects.Image[] = [];
 
         for (let i = 0; i <= object.amount; i++) {
-            const gameObject: Phaser.GameObjects.Image = new Phaser.GameObjects.Image(object.scene, Phaser.Math.Between(100, 340), object.y, object.texture);
+            const gameObject: Phaser.GameObjects.Image = new Phaser.GameObjects.Image(object.scene,  Phaser.Math.RND.between(100, 250), object.y, object.texture);
             gameObject.setScale(0.5);
             enermyObjects.push(gameObject);
         }

@@ -11,7 +11,6 @@ import MainPlayerContainer from '../objects/player/mainPlayerContainer';
 import Movement from '../objects/enums/movement';
 import PlayerText from '../objects/player/playerText';
 import PlayerHealth from '../objects/interfaces/player/playerHealth';
-import PlayerName from '../objects/interfaces/player/playerName';
 
 export default class PlayScene extends Scene {
   constructor () {
@@ -34,7 +33,7 @@ export default class PlayScene extends Scene {
 
   private collectableGroup!: CollectableGroup;
 
-  private randomDataGenerator: Phaser.Math.RandomDataGenerator = new Phaser.Math.RandomDataGenerator('shania');
+  private randomDataGenerator: Phaser.Math.RandomDataGenerator = Phaser.Math.RND;
 
   private mainPlayerContainer!: MainPlayerContainer;
 
