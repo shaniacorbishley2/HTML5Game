@@ -34,7 +34,7 @@ export default class GameServer {
 
         if (this.players.length > 1) {
 
-          this.gameStartTimer(5, true);
+          this.gameStartTimer(10, true);
         }
       });
 
@@ -61,7 +61,7 @@ export default class GameServer {
       });
 
       socket.on('gameStarted', () => {
-        this.gameStartTimer(5, false);
+        this.gameStartTimer(15, false);
         this.io.emit('playDisabled');
       })
     });
